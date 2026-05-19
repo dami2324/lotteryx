@@ -294,12 +294,6 @@ function parseLotteryGuruPage(html: string, draw: DrawName): DrawRow[] {
       return [];
     }
 
-    const day = date.getUTCDay();
-    const expectedDay = draw === "Miercolito" ? 3 : 0;
-    if (day !== expectedDay) {
-      return [];
-    }
-
     const prizes = [...block.matchAll(/<ul class="lg-numbers-small-multiple">([\s\S]*?)<\/ul>/g)]
       .slice(0, 3)
       .map((match) => [...match[1].matchAll(/<li class="lg-number">\s*(\d)\s*<\/li>/g)].map((digit) => digit[1]).join(""));
