@@ -186,7 +186,7 @@ export async function getPatternAnalysis(): Promise<PatternAnalysis> {
   };
 }
 
-async function getHistory(): Promise<DrawRow[]> {
+export async function getHistory(): Promise<DrawRow[]> {
   const [miercolito, dominical] = await Promise.all([
     fetchLotteryGuru(LOTTERY_GURU.Miercolito, "Miercolito"),
     fetchLotteryGuru(LOTTERY_GURU.Dominical, "Dominical")
