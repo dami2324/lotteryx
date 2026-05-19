@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/send-picks",
+      "schedule": "0 14 * * 0,3"
+    }
+  ]
+}

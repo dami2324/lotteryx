@@ -1,0 +1,184 @@
+﻿ANALISIS ENFOCADO - PATRON DE BRINCO 2DO/3RO A 1RO
+Loteria Nacional de Panama - Miercolito objetivo 20 de mayo de 2026
+Generado: 2026-05-19 02:44:11 hora America/Panama
+
+============================================================
+CRITERIO DEL INFORME
+============================================================
+Este informe SOLO evalua el patron indicado: terminaciones que salen en segundo o tercer premio y luego brincan al primer premio.
+No se usan secciones de numeros frios, calientes ni frecuencia general, salvo lo necesario para medir ese patron.
+Definicion de brinco: una terminacion aparece en 2do/3ro y luego aparece como 1er premio dentro de los siguientes 3 sorteos analizados.
+
+============================================================
+SENALES RECIENTES EN 2DO Y 3ER PREMIO
+============================================================
+Terminacion 30 | Origen: 2026-05-10 Dominical 2do 7030 | Exposiciones historicas 2do/3ro=4 | Brincos detectados=0
+Terminacion 75 | Origen: 2026-05-10 Dominical 3ro 3975 | Exposiciones historicas 2do/3ro=4 | Brincos detectados=0
+Terminacion 61 | Origen: 2026-05-13 Miercolito 2do 6461 | Exposiciones historicas 2do/3ro=8 | Brincos detectados=0
+Terminacion 13 | Origen: 2026-05-13 Miercolito 3ro 3013 | Exposiciones historicas 2do/3ro=6 | Brincos detectados=0
+Terminacion 87 | Origen: 2026-05-17 Dominical 2do 5587 | Exposiciones historicas 2do/3ro=3 | Brincos detectados=0
+Terminacion 82 | Origen: 2026-05-17 Dominical 3ro 2682 | Exposiciones historicas 2do/3ro=1 | Brincos detectados=0
+
+Lectura directa: estas son las terminaciones que quedan en observacion inmediata por haber salido abajo recientemente: 30, 75, 61, 13, 87, 82.
+
+============================================================
+TOP RECOMENDADO SOLO POR PATRON DE BRINCO
+============================================================
+1. Terminacion 61 | Puntaje patron 57.00/100 | sale mucho en 2do/3ro, pero sin brinco confirmado. Exposiciones 2do/3ro=8 (2do=6, 3ro=2); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-05-13 Miercolito 2do.
+2. Terminacion 13 | Puntaje patron 49.50/100 | sale mucho en 2do/3ro, pero sin brinco confirmado. Exposiciones 2do/3ro=6 (2do=1, 3ro=5); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-05-13 Miercolito 3ro.
+3. Terminacion 79 | Puntaje patron 45.75/100 | sale mucho en 2do/3ro, pero sin brinco confirmado. Exposiciones 2do/3ro=5 (2do=1, 3ro=4); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-04-26 Dominical 3ro.
+4. Terminacion 28 | Puntaje patron 44.50/100 | ya mostro brinco historico dentro de 3 sorteos. Exposiciones 2do/3ro=1 (2do=0, 3ro=1); brincos a 1ro en 3 sorteos=1; ultimo abajo=2026-03-29 Dominical 3ro.
+5. Terminacion 30 | Puntaje patron 42.00/100 | senal baja dentro de este patron. Exposiciones 2do/3ro=4 (2do=3, 3ro=1); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-05-10 Dominical 2do.
+6. Terminacion 75 | Puntaje patron 42.00/100 | senal baja dentro de este patron. Exposiciones 2do/3ro=4 (2do=2, 3ro=2); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-05-10 Dominical 3ro.
+7. Terminacion 17 | Puntaje patron 38.25/100 | senal baja dentro de este patron. Exposiciones 2do/3ro=3 (2do=1, 3ro=2); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-04-22 Miercolito 2do.
+8. Terminacion 83 | Puntaje patron 38.25/100 | sale mucho en 2do/3ro, pero sin brinco confirmado. Exposiciones 2do/3ro=6 (2do=3, 3ro=3); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-04-15 Miercolito 3ro.
+9. Terminacion 87 | Puntaje patron 38.25/100 | senal baja dentro de este patron. Exposiciones 2do/3ro=3 (2do=3, 3ro=0); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-05-17 Dominical 2do.
+10. Terminacion 38 | Puntaje patron 37.00/100 | ya mostro brinco historico dentro de 3 sorteos. Exposiciones 2do/3ro=4 (2do=2, 3ro=2); brincos a 1ro en 3 sorteos=1; ultimo abajo=2026-04-15 Miercolito 2do.
+11. Terminacion 04 | Puntaje patron 34.50/100 | senal baja dentro de este patron. Exposiciones 2do/3ro=2 (2do=1, 3ro=1); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-04-26 Dominical 2do.
+12. Terminacion 29 | Puntaje patron 34.50/100 | senal baja dentro de este patron. Exposiciones 2do/3ro=2 (2do=0, 3ro=2); brincos a 1ro en 3 sorteos=0; ultimo abajo=2026-04-29 Miercolito 3ro.
+
+============================================================
+BRINCOS HISTORICOS DETECTADOS
+============================================================
+Terminacion 76: 1 brinco(s) detectado(s), con 5 exposiciones en 2do/3ro.
+Terminacion 38: 1 brinco(s) detectado(s), con 4 exposiciones en 2do/3ro.
+Terminacion 31: 1 brinco(s) detectado(s), con 3 exposiciones en 2do/3ro.
+Terminacion 18: 1 brinco(s) detectado(s), con 2 exposiciones en 2do/3ro.
+Terminacion 98: 1 brinco(s) detectado(s), con 2 exposiciones en 2do/3ro.
+Terminacion 14: 1 brinco(s) detectado(s), con 1 exposiciones en 2do/3ro.
+Terminacion 28: 1 brinco(s) detectado(s), con 1 exposiciones en 2do/3ro.
+Terminacion 50: 1 brinco(s) detectado(s), con 1 exposiciones en 2do/3ro.
+
+============================================================
+CONCLUSION PRACTICA
+============================================================
+Por senal reciente pura, las terminaciones bajo vigilancia son: 30, 75, 61, 13, 87, 82.
+Combinando senal reciente + cantidad de apariciones en 2do/3ro + brincos historicos, el grupo principal queda: 61, 13, 79, 28, 30, 75.
+La terminacion 61 destaca porque salio recientemente abajo y ademas es la que mas veces aparece en 2do/3ro dentro de la muestra.
+
+============================================================
+BASE DE DATOS USADA
+============================================================
+Sorteos analizados con 1ro, 2do y 3ro: 111
+Periodo efectivo: 2025-01-05 a 2026-05-17
+Fuentes: La Prensa Panama y LotteryGuru, segun el registro previamente recopilado.
+
+============================================================
+ADVERTENCIA
+============================================================
+Esto no garantiza resultado. El patron de brinco es una lectura empirica del historial disponible y debe tratarse como observacion probabilistica, no como certeza.
+
+============================================================
+REGISTRO DE SORTEOS USADOS
+============================================================
+2025-01-05 | Dominical | 1ro 2348 term 48 | 2do 4883 term 83 | 3ro 1917 term 17 | Fuente LotteryGuru
+2025-01-12 | Dominical | 1ro 9873 term 73 | 2do 9087 term 87 | 3ro 4513 term 13 | Fuente LotteryGuru
+2025-01-22 | Miercolito | 1ro 9689 term 89 | 2do 7291 term 91 | 3ro 0414 term 14 | Fuente LotteryGuru
+2025-01-26 | Dominical | 1ro 7931 term 31 | 2do 9451 term 51 | 3ro 9961 term 61 | Fuente LotteryGuru
+2025-01-29 | Miercolito | 1ro 5914 term 14 | 2do 8702 term 02 | 3ro 5979 term 79 | Fuente LotteryGuru
+2025-02-02 | Dominical | 1ro 8287 term 87 | 2do 5646 term 46 | 3ro 9490 term 90 | Fuente LotteryGuru
+2025-02-05 | Miercolito | 1ro 5332 term 32 | 2do 9483 term 83 | 3ro 3145 term 45 | Fuente LotteryGuru
+2025-02-09 | Dominical | 1ro 8870 term 70 | 2do 3265 term 65 | 3ro 3531 term 31 | Fuente LotteryGuru
+2025-02-12 | Miercolito | 1ro 1964 term 64 | 2do 5108 term 08 | 3ro 5436 term 36 | Fuente LotteryGuru
+2025-02-16 | Dominical | 1ro 5531 term 31 | 2do 0177 term 77 | 3ro 2845 term 45 | Fuente LotteryGuru
+2025-02-19 | Miercolito | 1ro 9055 term 55 | 2do 7902 term 02 | 3ro 9676 term 76 | Fuente LotteryGuru
+2025-02-23 | Dominical | 1ro 5922 term 22 | 2do 1579 term 79 | 3ro 7919 term 19 | Fuente La Prensa Panama
+2025-02-26 | Miercolito | 1ro 8443 term 43 | 2do 5376 term 76 | 3ro 5554 term 54 | Fuente LotteryGuru
+2025-03-05 | Miercolito | 1ro 0558 term 58 | 2do 2461 term 61 | 3ro 2176 term 76 | Fuente La Prensa Panama
+2025-03-09 | Dominical | 1ro 7201 term 01 | 2do 8607 term 07 | 3ro 4621 term 21 | Fuente LotteryGuru
+2025-03-12 | Miercolito | 1ro 8875 term 75 | 2do 1057 term 57 | 3ro 7257 term 57 | Fuente La Prensa Panama
+2025-03-16 | Dominical | 1ro 2504 term 04 | 2do 1425 term 25 | 3ro 2297 term 97 | Fuente LotteryGuru
+2025-03-19 | Miercolito | 1ro 9693 term 93 | 2do 0915 term 15 | 3ro 7500 term 00 | Fuente LotteryGuru
+2025-03-23 | Dominical | 1ro 0123 term 23 | 2do 3838 term 38 | 3ro 1894 term 94 | Fuente LotteryGuru
+2025-04-02 | Miercolito | 1ro 6119 term 19 | 2do 1832 term 32 | 3ro 8811 term 11 | Fuente LotteryGuru
+2025-04-06 | Dominical | 1ro 6064 term 64 | 2do 7959 term 59 | 3ro 0029 term 29 | Fuente LotteryGuru
+2025-04-13 | Dominical | 1ro 1378 term 78 | 2do 4898 term 98 | 3ro 1251 term 51 | Fuente LotteryGuru
+2025-04-16 | Miercolito | 1ro 1803 term 03 | 2do 4992 term 92 | 3ro 0285 term 85 | Fuente La Prensa Panama
+2025-04-27 | Dominical | 1ro 8401 term 01 | 2do 9864 term 64 | 3ro 2692 term 92 | Fuente LotteryGuru
+2025-05-04 | Dominical | 1ro 8798 term 98 | 2do 1406 term 06 | 3ro 9784 term 84 | Fuente LotteryGuru
+2025-05-07 | Miercolito | 1ro 8207 term 07 | 2do 3415 term 15 | 3ro 6838 term 38 | Fuente La Prensa Panama
+2025-05-11 | Dominical | 1ro 7824 term 24 | 2do 9499 term 99 | 3ro 0495 term 95 | Fuente LotteryGuru
+2025-05-14 | Miercolito | 1ro 5254 term 54 | 2do 5552 term 52 | 3ro 5406 term 06 | Fuente La Prensa Panama
+2025-05-18 | Dominical | 1ro 7838 term 38 | 2do 6820 term 20 | 3ro 7570 term 70 | Fuente La Prensa Panama
+2025-05-21 | Miercolito | 1ro 4562 term 62 | 2do 9065 term 65 | 3ro 0203 term 03 | Fuente La Prensa Panama
+2025-05-25 | Dominical | 1ro 5730 term 30 | 2do 9647 term 47 | 3ro 6254 term 54 | Fuente LotteryGuru
+2025-05-28 | Miercolito | 1ro 6093 term 93 | 2do 9752 term 52 | 3ro 6091 term 91 | Fuente LotteryGuru
+2025-06-01 | Dominical | 1ro 0350 term 50 | 2do 3466 term 66 | 3ro 9854 term 54 | Fuente La Prensa Panama
+2025-06-04 | Miercolito | 1ro 3048 term 48 | 2do 8215 term 15 | 3ro 1051 term 51 | Fuente La Prensa Panama
+2025-06-08 | Dominical | 1ro 4987 term 87 | 2do 1966 term 66 | 3ro 0188 term 88 | Fuente LotteryGuru
+2025-06-11 | Miercolito | 1ro 6458 term 58 | 2do 3523 term 23 | 3ro 1833 term 33 | Fuente LotteryGuru
+2025-06-15 | Dominical | 1ro 3134 term 34 | 2do 5370 term 70 | 3ro 6941 term 41 | Fuente LotteryGuru
+2025-06-18 | Miercolito | 1ro 7756 term 56 | 2do 7619 term 19 | 3ro 1524 term 24 | Fuente La Prensa Panama
+2025-06-25 | Miercolito | 1ro 5212 term 12 | 2do 6503 term 03 | 3ro 7561 term 61 | Fuente La Prensa Panama
+2025-06-29 | Dominical | 1ro 4653 term 53 | 2do 0235 term 35 | 3ro 2751 term 51 | Fuente LotteryGuru
+2025-07-02 | Miercolito | 1ro 9591 term 91 | 2do 1470 term 70 | 3ro 3669 term 69 | Fuente La Prensa Panama
+2025-07-06 | Dominical | 1ro 8473 term 73 | 2do 5475 term 75 | 3ro 0863 term 63 | Fuente LotteryGuru
+2025-07-09 | Miercolito | 1ro 3988 term 88 | 2do 4383 term 83 | 3ro 5783 term 83 | Fuente LotteryGuru
+2025-07-13 | Dominical | 1ro 9512 term 12 | 2do 0032 term 32 | 3ro 6720 term 20 | Fuente LotteryGuru
+2025-07-16 | Miercolito | 1ro 5008 term 08 | 2do 3149 term 49 | 3ro 7834 term 34 | Fuente La Prensa Panama
+2025-07-20 | Dominical | 1ro 2245 term 45 | 2do 1273 term 73 | 3ro 7437 term 37 | Fuente LotteryGuru
+2025-07-23 | Miercolito | 1ro 9447 term 47 | 2do 2630 term 30 | 3ro 1725 term 25 | Fuente LotteryGuru
+2025-07-27 | Dominical | 1ro 7962 term 62 | 2do 8224 term 24 | 3ro 6765 term 65 | Fuente LotteryGuru
+2025-07-30 | Miercolito | 1ro 4641 term 41 | 2do 9081 term 81 | 3ro 4102 term 02 | Fuente La Prensa Panama
+2025-08-03 | Dominical | 1ro 2832 term 32 | 2do 5831 term 31 | 3ro 8118 term 18 | Fuente LotteryGuru
+2025-08-06 | Miercolito | 1ro 4318 term 18 | 2do 7053 term 53 | 3ro 3380 term 80 | Fuente LotteryGuru
+2025-08-10 | Dominical | 1ro 4219 term 19 | 2do 9913 term 13 | 3ro 7020 term 20 | Fuente La Prensa Panama
+2025-08-24 | Dominical | 1ro 8679 term 79 | 2do 9487 term 87 | 3ro 3658 term 58 | Fuente La Prensa Panama
+2025-08-27 | Miercolito | 1ro 1391 term 91 | 2do 3561 term 61 | 3ro 8225 term 25 | Fuente La Prensa Panama
+2025-09-03 | Miercolito | 1ro 0884 term 84 | 2do 5954 term 54 | 3ro 2810 term 10 | Fuente LotteryGuru
+2025-09-07 | Dominical | 1ro 5481 term 81 | 2do 2190 term 90 | 3ro 8113 term 13 | Fuente La Prensa Panama
+2025-09-14 | Dominical | 1ro 7334 term 34 | 2do 6366 term 66 | 3ro 8033 term 33 | Fuente LotteryGuru
+2025-09-21 | Dominical | 1ro 2871 term 71 | 2do 7212 term 12 | 3ro 5244 term 44 | Fuente La Prensa Panama
+2025-09-24 | Miercolito | 1ro 3704 term 04 | 2do 6336 term 36 | 3ro 3666 term 66 | Fuente La Prensa Panama
+2025-09-28 | Dominical | 1ro 5511 term 11 | 2do 5823 term 23 | 3ro 5823 term 23 | Fuente La Prensa Panama
+2025-10-01 | Miercolito | 1ro 0108 term 08 | 2do 1127 term 27 | 3ro 8712 term 12 | Fuente La Prensa Panama
+2025-10-08 | Miercolito | 1ro 8383 term 83 | 2do 1774 term 74 | 3ro 3301 term 01 | Fuente La Prensa Panama
+2025-10-12 | Dominical | 1ro 9695 term 95 | 2do 5798 term 98 | 3ro 3877 term 77 | Fuente La Prensa Panama
+2025-10-15 | Miercolito | 1ro 7707 term 07 | 2do 9577 term 77 | 3ro 3310 term 10 | Fuente LotteryGuru
+2025-10-19 | Dominical | 1ro 1330 term 30 | 2do 0445 term 45 | 3ro 1518 term 18 | Fuente LotteryGuru
+2025-10-22 | Miercolito | 1ro 4248 term 48 | 2do 8577 term 77 | 3ro 8841 term 41 | Fuente La Prensa Panama
+2025-11-02 | Dominical | 1ro 3052 term 52 | 2do 5196 term 96 | 3ro 3538 term 38 | Fuente La Prensa Panama
+2025-11-09 | Dominical | 1ro 1404 term 04 | 2do 2737 term 37 | 3ro 2704 term 04 | Fuente La Prensa Panama
+2025-11-16 | Dominical | 1ro 5560 term 60 | 2do 2570 term 70 | 3ro 9639 term 39 | Fuente LotteryGuru
+2025-11-19 | Miercolito | 1ro 4740 term 40 | 2do 8453 term 53 | 3ro 2032 term 32 | Fuente LotteryGuru
+2025-11-23 | Dominical | 1ro 7535 term 35 | 2do 9550 term 50 | 3ro 9531 term 31 | Fuente La Prensa Panama
+2025-11-30 | Dominical | 1ro 1124 term 24 | 2do 5512 term 12 | 3ro 6906 term 06 | Fuente LotteryGuru
+2025-12-07 | Dominical | 1ro 0030 term 30 | 2do 6561 term 61 | 3ro 0447 term 47 | Fuente LotteryGuru
+2025-12-10 | Miercolito | 1ro 7850 term 50 | 2do 6360 term 60 | 3ro 5917 term 17 | Fuente LotteryGuru
+2025-12-17 | Miercolito | 1ro 8301 term 01 | 2do 1955 term 55 | 3ro 3551 term 51 | Fuente LotteryGuru
+2025-12-21 | Dominical | 1ro 5706 term 06 | 2do 2190 term 90 | 3ro 7965 term 65 | Fuente La Prensa Panama
+2025-12-24 | Miercolito | 1ro 8937 term 37 | 2do 9611 term 11 | 3ro 5042 term 42 | Fuente LotteryGuru
+2025-12-28 | Dominical | 1ro 5905 term 05 | 2do 2861 term 61 | 3ro 4691 term 91 | Fuente La Prensa Panama
+2025-12-31 | Miercolito | 1ro 6369 term 69 | 2do 0846 term 46 | 3ro 4063 term 63 | Fuente LotteryGuru
+2026-01-04 | Dominical | 1ro 0587 term 87 | 2do 6963 term 63 | 3ro 4590 term 90 | Fuente LotteryGuru
+2026-01-07 | Miercolito | 1ro 8884 term 84 | 2do 4130 term 30 | 3ro 5506 term 06 | Fuente La Prensa Panama
+2026-01-11 | Dominical | 1ro 4259 term 59 | 2do 6537 term 37 | 3ro 6530 term 30 | Fuente LotteryGuru
+2026-01-14 | Miercolito | 1ro 3757 term 57 | 2do 7747 term 47 | 3ro 2802 term 02 | Fuente La Prensa Panama
+2026-01-18 | Dominical | 1ro 9539 term 39 | 2do 4257 term 57 | 3ro 2275 term 75 | Fuente La Prensa Panama
+2026-01-21 | Miercolito | 1ro 0551 term 51 | 2do 1476 term 76 | 3ro 3932 term 32 | Fuente LotteryGuru
+2026-01-25 | Dominical | 1ro 3942 term 42 | 2do 6826 term 26 | 3ro 8408 term 08 | Fuente LotteryGuru
+2026-01-28 | Miercolito | 1ro 6829 term 29 | 2do 3912 term 12 | 3ro 1883 term 83 | Fuente La Prensa Panama
+2026-02-01 | Dominical | 1ro 5863 term 63 | 2do 8102 term 02 | 3ro 1212 term 12 | Fuente LotteryGuru
+2026-02-04 | Miercolito | 1ro 7438 term 38 | 2do 3826 term 26 | 3ro 7967 term 67 | Fuente La Prensa Panama
+2026-02-08 | Dominical | 1ro 7501 term 01 | 2do 7097 term 97 | 3ro 8145 term 45 | Fuente La Prensa Panama
+2026-02-11 | Miercolito | 1ro 6682 term 82 | 2do 5424 term 24 | 3ro 4412 term 12 | Fuente LotteryGuru
+2026-02-22 | Dominical | 1ro 9775 term 75 | 2do 5005 term 05 | 3ro 5979 term 79 | Fuente La Prensa Panama
+2026-02-25 | Miercolito | 1ro 2735 term 35 | 2do 7293 term 93 | 3ro 2674 term 74 | Fuente La Prensa Panama
+2026-03-01 | Dominical | 1ro 3047 term 47 | 2do 0361 term 61 | 3ro 4391 term 91 | Fuente LotteryGuru
+2026-03-04 | Miercolito | 1ro 3975 term 75 | 2do 9484 term 84 | 3ro 2676 term 76 | Fuente LotteryGuru
+2026-03-08 | Dominical | 1ro 7565 term 65 | 2do 0421 term 21 | 3ro 6513 term 13 | Fuente La Prensa Panama
+2026-03-11 | Miercolito | 1ro 0854 term 54 | 2do 1957 term 57 | 3ro 6371 term 71 | Fuente LotteryGuru
+2026-03-15 | Dominical | 1ro 0976 term 76 | 2do 9775 term 75 | 3ro 0994 term 94 | Fuente LotteryGuru
+2026-03-18 | Miercolito | 1ro 3755 term 55 | 2do 2949 term 49 | 3ro 9660 term 60 | Fuente La Prensa Panama
+2026-03-22 | Dominical | 1ro 3522 term 22 | 2do 6812 term 12 | 3ro 3143 term 43 | Fuente LotteryGuru
+2026-03-25 | Miercolito | 1ro 6915 term 15 | 2do 1573 term 73 | 3ro 1871 term 71 | Fuente La Prensa Panama
+2026-03-29 | Dominical | 1ro 8364 term 64 | 2do 3657 term 57 | 3ro 3028 term 28 | Fuente LotteryGuru
+2026-04-01 | Miercolito | 1ro 3561 term 61 | 2do 7065 term 65 | 3ro 2408 term 08 | Fuente La Prensa Panama
+2026-04-12 | Dominical | 1ro 7964 term 64 | 2do 5211 term 11 | 3ro 6713 term 13 | Fuente La Prensa Panama
+2026-04-15 | Miercolito | 1ro 5828 term 28 | 2do 8638 term 38 | 3ro 4883 term 83 | Fuente La Prensa Panama
+2026-04-22 | Miercolito | 1ro 9864 term 64 | 2do 1117 term 17 | 3ro 1379 term 79 | Fuente LotteryGuru
+2026-04-26 | Dominical | 1ro 5144 term 44 | 2do 2104 term 04 | 3ro 1579 term 79 | Fuente LotteryGuru
+2026-04-29 | Miercolito | 1ro 2354 term 54 | 2do 7359 term 59 | 3ro 7329 term 29 | Fuente La Prensa Panama
+2026-05-10 | Dominical | 1ro 0299 term 99 | 2do 7030 term 30 | 3ro 3975 term 75 | Fuente La Prensa Panama
+2026-05-13 | Miercolito | 1ro 4764 term 64 | 2do 6461 term 61 | 3ro 3013 term 13 | Fuente La Prensa Panama
+2026-05-17 | Dominical | 1ro 1746 term 46 | 2do 5587 term 87 | 3ro 2682 term 82 | Fuente LotteryGuru
