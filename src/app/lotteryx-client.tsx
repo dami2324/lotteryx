@@ -34,6 +34,11 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [searchResult, setSearchResult] = useState<DrawRow | null | "not_found">(null);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [password, setPassword] = useState("");
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authError, setAuthError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     const stored = window.localStorage.getItem(PROFILE_KEY);
     if (stored) {
@@ -84,21 +89,51 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     return `${profile.name}, tus 10 números pro`;
   }, [profile]);
 
-  function submitProfile(event: React.FormEvent<HTMLFormElement>) {
+  async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextProfile = {
-      name: name.trim(),
-      email: email.trim().toLowerCase()
-    };
-    if (!nextProfile.name || !nextProfile.email) return;
+    setAuthError("");
+    setIsSubmitting(true);
 
-    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(nextProfile));
-    fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nextProfile)
-    }).catch(() => undefined);
-    setProfile(nextProfile);
+    const emailTrimmed = email.trim().toLowerCase();
+    const passTrimmed = password.trim();
+
+    if (!emailTrimmed || !passTrimmed || (authMode === "register" && !name.trim())) {
+      setAuthError("Completa todos los campos");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      if (authMode === "login") {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailTrimmed, password: passTrimmed })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Error al iniciar sesión");
+        
+        const nextProfile = { name: data.name, email: data.email };
+        window.localStorage.setItem(PROFILE_KEY, JSON.stringify(nextProfile));
+        setProfile(nextProfile);
+      } else {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), email: emailTrimmed, password: passTrimmed })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Error al registrarse");
+        
+        const nextProfile = { name: name.trim(), email: emailTrimmed };
+        window.localStorage.setItem(PROFILE_KEY, JSON.stringify(nextProfile));
+        setProfile(nextProfile);
+      }
+    } catch (err: any) {
+      setAuthError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const handleRefresh = async () => {
@@ -163,13 +198,28 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
       <main className="shell auth-shell">
         <section className="auth-card glass-panel">
           <p className="brand">LotteryX</p>
-          <h1>{greeting}</h1>
+          <h1>{authMode === "login" ? "Iniciar Sesión" : "Crear Cuenta"}</h1>
           <p className="draw-date">Tus números calculados con inteligencia estadística.</p>
-          <form onSubmit={submitProfile}>
-            <label>Nombre<input value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" required /></label>
+          <form onSubmit={submitAuth}>
+            {authError && <div style={{ color: "#fca5a5", fontSize: 14, background: "rgba(239, 68, 68, 0.1)", padding: 12, borderRadius: 8 }}>{authError}</div>}
+            
+            {authMode === "register" && (
+              <label>Nombre<input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required /></label>
+            )}
+            
             <label>Correo<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required /></label>
-            <button type="submit">Entrar</button>
+            <label>Contraseña<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={authMode === "login" ? "current-password" : "new-password"} required /></label>
+            
+            <button type="submit" disabled={isSubmitting}>{isSubmitting ? "Procesando..." : authMode === "login" ? "Entrar" : "Registrarme"}</button>
           </form>
+          
+          <div style={{ marginTop: 24, fontSize: 14, color: "var(--text-muted)" }}>
+            {authMode === "login" ? (
+              <p>¿No tienes cuenta? <button type="button" onClick={() => { setAuthMode("register"); setAuthError(""); }} style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontWeight: 600, padding: 0 }}>Regístrate aquí</button></p>
+            ) : (
+              <p>¿Ya tienes cuenta? <button type="button" onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontWeight: 600, padding: 0 }}>Inicia sesión</button></p>
+            )}
+          </div>
         </section>
       </main>
     );

@@ -2,6 +2,7 @@ export type LotteryXUser = {
   email: string;
   name: string;
   createdAt: string;
+  password?: string;
 };
 
 const USERS_KEY = "lotteryx:users";
@@ -16,8 +17,29 @@ export async function saveUser(user: LotteryXUser) {
 
   const email = user.email.trim().toLowerCase();
   await redisCommand(["SADD", USERS_KEY, email]);
-  await redisCommand(["HSET", userKey(email), "email", email, "name", user.name, "createdAt", user.createdAt]);
+  
+  if (user.password) {
+    await redisCommand(["HSET", userKey(email), "email", email, "name", user.name, "createdAt", user.createdAt, "password", user.password]);
+  } else {
+    await redisCommand(["HSET", userKey(email), "email", email, "name", user.name, "createdAt", user.createdAt]);
+  }
+  
   return { persisted: true };
+}
+
+export async function getUser(email: string): Promise<LotteryXUser | null> {
+  if (!redisUrl || !redisToken) return null;
+  const safeEmail = email.trim().toLowerCase();
+  const data = await redisCommand<string[]>(["HMGET", userKey(safeEmail), "email", "name", "createdAt", "password"]);
+  
+  if (!data[0]) return null;
+  
+  return {
+    email: data[0],
+    name: data[1] ?? "Jugador",
+    createdAt: data[2] ?? new Date().toISOString(),
+    password: data[3] ?? undefined
+  };
 }
 
 export async function getUsers(): Promise<LotteryXUser[]> {
