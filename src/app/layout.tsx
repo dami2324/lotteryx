@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+
 export const metadata: Metadata = {
-  title: "LotteryX",
-  description: "Top 10 de terminaciones basado en el patron 2do/3ro hacia 1ro."
+  title: "LotteryX | Pro Picks",
+  description: "Top 10 terminaciones para la lotería basado en estadística y probabilidad."
 };
 
 export default function RootLayout({
@@ -12,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body>{children}</body>
+    <html lang="es" className={inter.variable}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

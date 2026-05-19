@@ -25,6 +25,10 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [today, setToday] = useState("");
+  
+  // New state for refresh functionality
+  const [currentAnalysis, setCurrentAnalysis] = useState<PatternAnalysis>(analysis);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(PROFILE_KEY);
@@ -49,7 +53,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
       return;
     }
 
-    const id = `${analysis.nextDraw.date}-${analysis.nextDraw.name}`;
+    const id = `${currentAnalysis.nextDraw.date}-${currentAnalysis.nextDraw.name}`;
     const saved = window.localStorage.getItem(HISTORY_KEY);
     const history = saved ? (JSON.parse(saved) as SavedRun[]) : [];
     const exists = history.some((item) => item.id === id && item.email === profile.email);
@@ -60,17 +64,17 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     const nextHistory = [
       {
         id,
-        date: analysis.nextDraw.date,
-        draw: analysis.nextDraw.name,
+        date: currentAnalysis.nextDraw.date,
+        draw: currentAnalysis.nextDraw.name,
         email: profile.email,
-        topFive: analysis.topFive.map((pick) => pick.term),
-        backups: analysis.backups.map((pick) => pick.term)
+        topFive: currentAnalysis.topFive.map((pick) => pick.term),
+        backups: currentAnalysis.backups.map((pick) => pick.term)
       },
       ...history
     ].slice(0, 20);
 
     window.localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
-  }, [analysis, profile]);
+  }, [currentAnalysis, profile]);
 
   const greeting = useMemo(() => {
     if (!profile) {
@@ -100,17 +104,32 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     setProfile(nextProfile);
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch("/api/picks");
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentAnalysis(data);
+      }
+    } catch (error) {
+      console.error("Error updating picks", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   if (!profile) {
     return (
       <main className="shell auth-shell">
-        <section className="auth-card">
+        <section className="auth-card glass-panel">
           <p className="brand">LotteryX</p>
           <h1>{greeting}</h1>
-          <p className="draw-date">Guardamos tu historial en este dispositivo.</p>
+          <p className="draw-date">Tus números calculados con inteligencia estadística.</p>
           <form onSubmit={submitProfile}>
             <label>
               Nombre
-              <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" />
+              <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" required />
             </label>
             <label>
               Correo
@@ -119,6 +138,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 autoComplete="email"
+                required
               />
             </label>
             <button type="submit">Entrar</button>
@@ -130,44 +150,64 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
   return (
     <main className="shell">
-      <section className="summary">
+      <section className="summary glass-panel">
         <div>
-          <p className="brand">LotteryX</p>
+          <p className="brand">LotteryX Pro</p>
           <h1>{greeting}</h1>
           <p className="draw-date">
-            {analysis.nextDraw.name} · {analysis.nextDraw.label}
+            Sorteo {currentAnalysis.nextDraw.name} · {currentAnalysis.nextDraw.label}
           </p>
         </div>
-        <div className="current-date">
-          <span>Hoy</span>
-          <strong>{today}</strong>
+        <div className="actions-container">
+          <div className="current-date">
+            <span>Hoy</span>
+            <strong>{today}</strong>
+          </div>
+          <button onClick={handleRefresh} disabled={isRefreshing} className="btn-refresh" title="Actualizar datos">
+            <svg
+              className={isRefreshing ? "spin" : ""}
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 21v-5h5" />
+            </svg>
+            {isRefreshing ? "Calculando..." : "Actualizar"}
+          </button>
         </div>
       </section>
 
       <section className="results">
-        <div className="panel primary">
+        <div className="panel primary glass-panel">
           <div className="panel-title">
-            <h2>5 principales</h2>
-            <span>Principal</span>
+            <h2>5 Principales</h2>
           </div>
-          <PickList picks={analysis.topFive} start={1} />
+          <PickList picks={currentAnalysis.topFive} />
         </div>
 
-        <div className="panel backup">
+        <div className="panel backup glass-panel">
           <div className="panel-title">
-            <h2>5 backup</h2>
-            <span>Backup</span>
+            <h2>5 de Backup</h2>
           </div>
-          <PickList picks={analysis.backups} start={6} />
+          <PickList picks={currentAnalysis.backups} />
         </div>
       </section>
     </main>
   );
 }
 
-function PickList({ picks, start }: { picks: Pick[]; start: number }) {
+function PickList({ picks }: { picks: Pick[] }) {
   return (
-    <ol className="pick-list" start={start}>
+    <ul className="pick-list">
       {picks.map((pick) => (
         <li key={pick.term}>
           <div className="rank-number">{pick.term}</div>
@@ -176,11 +216,10 @@ function PickList({ picks, start }: { picks: Pick[]; start: number }) {
             <span>{pick.reason}</span>
             <small>
               2do/3ro: {pick.exposures} · 1ro: {pick.firstCount} · Brincos: {pick.verifiedJumps}
-              {pick.averageJumpDelay !== null ? ` · Prom: ${pick.averageJumpDelay} sorteos` : ""}
             </small>
           </div>
         </li>
       ))}
-    </ol>
+    </ul>
   );
 }
