@@ -1,4 +1,4 @@
-﻿ANALISIS ENFOCADO - PATRON DE BRINCO 2DO/3RO A 1RO
+ANALISIS ENFOCADO - PATRON DE BRINCO 2DO/3RO A 1RO
 Loteria Nacional de Panama - Miercolito objetivo 20 de mayo de 2026
 Generado: 2026-05-19 02:44:11 hora America/Panama
 
@@ -179,6 +179,7 @@ REGISTRO DE SORTEOS USADOS
 2026-04-22 | Miercolito | 1ro 9864 term 64 | 2do 1117 term 17 | 3ro 1379 term 79 | Fuente LotteryGuru
 2026-04-26 | Dominical | 1ro 5144 term 44 | 2do 2104 term 04 | 3ro 1579 term 79 | Fuente LotteryGuru
 2026-04-29 | Miercolito | 1ro 2354 term 54 | 2do 7359 term 59 | 3ro 7329 term 29 | Fuente La Prensa Panama
+2026-05-06 | Miercolito | 1ro 4757 term 57 | 2do 6046 term 46 | 3ro 5808 term 08 | Fuente Telemetro
 2026-05-10 | Dominical | 1ro 0299 term 99 | 2do 7030 term 30 | 3ro 3975 term 75 | Fuente La Prensa Panama
 2026-05-13 | Miercolito | 1ro 4764 term 64 | 2do 6461 term 61 | 3ro 3013 term 13 | Fuente La Prensa Panama
 2026-05-17 | Dominical | 1ro 1746 term 46 | 2do 5587 term 87 | 3ro 2682 term 82 | Fuente LotteryGuru
