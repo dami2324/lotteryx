@@ -161,10 +161,10 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   if (!profile) {
     return (
       <main className="shell auth-shell">
-        <section className="auth-card">
+        <section className="auth-card glass-panel">
           <p className="brand">LotteryX</p>
           <h1>{greeting}</h1>
-          <p className="draw-date">Guardamos tu historial en este dispositivo.</p>
+          <p className="draw-date">Tus números calculados con inteligencia estadística.</p>
           <form onSubmit={submitProfile}>
             <label>Nombre<input value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" required /></label>
             <label>Correo<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required /></label>
