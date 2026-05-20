@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const headerSecret = request.headers.get("authorization")?.replace("Bearer ", "");
 
-  if (secret && headerSecret !== secret) {
+  if (!secret || headerSecret !== secret) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

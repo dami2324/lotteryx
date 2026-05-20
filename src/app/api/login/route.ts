@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/users";
+import { verifyPassword } from "@/lib/crypto";
 
 export async function POST(request: Request) {
   try {
@@ -13,11 +14,16 @@ export async function POST(request: Request) {
     const user = await getUser(email);
 
     if (!user) {
-      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      return NextResponse.json({ error: "Usuario o contraseña incorrectos" }, { status: 401 });
     }
 
-    if (user.password && user.password !== password) {
-      return NextResponse.json({ error: "Contraseña incorrecta" }, { status: 401 });
+    if (!user.password) {
+      return NextResponse.json({ error: "Usuario o contraseña incorrectos" }, { status: 401 });
+    }
+
+    const isPasswordValid = await verifyPassword(password, user.password);
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: "Usuario o contraseña incorrectos" }, { status: 401 });
     }
 
     // If successful, return the user info without password
