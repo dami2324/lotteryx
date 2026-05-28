@@ -183,3 +183,4 @@ REGISTRO DE SORTEOS USADOS
 2026-05-10 | Dominical | 1ro 0299 term 99 | 2do 7030 term 30 | 3ro 3975 term 75 | Fuente La Prensa Panama
 2026-05-13 | Miercolito | 1ro 4764 term 64 | 2do 6461 term 61 | 3ro 3013 term 13 | Fuente La Prensa Panama
 2026-05-17 | Dominical | 1ro 1746 term 46 | 2do 5587 term 87 | 3ro 2682 term 82 | Fuente LotteryGuru
+2026-05-20 | Miercolito | 1ro 5994 term 94 | 2do 0088 term 88 | 3ro 0002 term 02 | Fuente Oficial

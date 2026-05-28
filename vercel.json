@@ -1,8 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/cron/send-picks",
-      "schedule": "0 12 * * 0,3"
+      "path": "/api/cron/morning-picks",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/afternoon-results",
+      "schedule": "0 21 * * *"
     }
   ]
 }

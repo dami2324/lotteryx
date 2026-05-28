@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/users";
-import { verifyPassword } from "@/lib/crypto";
+import { verifyPassword, signToken } from "@/lib/crypto";
 
 export async function POST(request: Request) {
   try {
@@ -27,7 +27,8 @@ export async function POST(request: Request) {
     }
 
     // If successful, return the user info without password
-    return NextResponse.json({ success: true, name: user.name, email: user.email }, { status: 200 });
+    const token = await signToken(user.email);
+    return NextResponse.json({ success: true, name: user.name, email: user.email, token }, { status: 200 });
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json({ error: "No se pudo iniciar sesión" }, { status: 500 });

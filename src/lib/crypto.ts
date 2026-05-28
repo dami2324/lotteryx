@@ -99,3 +99,60 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   }
   return result === 0;
 }
+
+const TOKEN_SECRET = process.env.CRON_SECRET ?? "fallback-lotteryx-token-secret-123456";
+
+/**
+ * Signs an email with HMAC-SHA256 to create a secure session token.
+ */
+export async function signToken(email: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(TOKEN_SECRET);
+  const data = encoder.encode(email);
+  
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signature = await crypto.subtle.sign("HMAC", key, data);
+  const sigHex = bufToHex(signature);
+  return `${email}::${sigHex}`;
+}
+
+/**
+ * Verifies a token and returns the email if valid, or null.
+ */
+export async function verifyToken(token: string): Promise<string | null> {
+  const dotIdx = token.lastIndexOf('::');
+  if (dotIdx === -1) return null;
+  const email = token.substring(0, dotIdx);
+  const sigHex = token.substring(dotIdx + 2);
+  
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(TOKEN_SECRET);
+  const data = encoder.encode(email);
+  
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const expectedSignature = await crypto.subtle.sign("HMAC", key, data);
+  const expectedSigHex = bufToHex(expectedSignature);
+  
+  if (sigHex.length !== expectedSigHex.length) return null;
+  let result = 0;
+  for (let i = 0; i < sigHex.length; i++) {
+    result |= sigHex.charCodeAt(i) ^ expectedSigHex.charCodeAt(i);
+  }
+  
+  return result === 0 ? email : null;
+}
+

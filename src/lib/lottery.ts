@@ -1,7 +1,10 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-export type DrawName = "Miercolito" | "Dominical";
+export type DrawName = "Miercolito" | "Dominical" | "Gordito" | "Extraordinaria";
+
+export type StrategyType = "hot" | "cold" | "most_played" | "jump";
+export type TimeRange = 30 | 60 | 90 | 180;
 
 export type DrawRow = {
   date: string;
@@ -53,6 +56,7 @@ export type PatternAnalysis = {
     end: string;
   };
   sources: string[];
+  globalStats: Array<{ term: string; frequency: number; label: "HOT" | "COLD" | "NORMAL" }>;
 };
 
 type MutableStats = {
@@ -74,10 +78,10 @@ type MutableStats = {
 };
 
 const LOTTERY_GURU = {
-  Miercolito:
-    "https://lotteryguru.com/panama-lottery-results/pa-miercolito/pa-miercolito-results-history",
-  Dominical:
-    "https://lotteryguru.com/panama-lottery-results/pa-dominical/pa-dominical-results-history"
+  Miercolito: "https://lotteryguru.com/panama-lottery-results/pa-miercolito/pa-miercolito-results-history",
+  Dominical: "https://lotteryguru.com/panama-lottery-results/pa-dominical/pa-dominical-results-history",
+  Gordito: "https://lotteryguru.com/panama-lottery-results/pa-gordito-del-zodiaco/pa-gordito-del-zodiaco-results-history",
+  Extraordinaria: "https://lotteryguru.com/panama-lottery-results/pa-extraordinaria/pa-extraordinaria-results-history"
 } as const;
 
 const MONTHS: Record<string, number> = {
@@ -100,75 +104,175 @@ const PANAMA_TIMEZONE = "America/Panama";
 const HISTORY_START = "2025-01-01";
 const MAX_PAGES = 8;
 
-export async function getPatternAnalysis(): Promise<PatternAnalysis> {
-  const rows = await getHistory();
-  if (rows.length === 0) {
+export async function getGlobalStats(draw: DrawName, timeRange: TimeRange) {
+  let allRows = await getHistory();
+  if (allRows.length === 0) {
     throw new Error("No se encontraron sorteos validos.");
+  }
+
+  // Filter by draw type
+  allRows = allRows.filter(r => r.draw === draw);
+
+  const cutoffDate = new Date();
+  cutoffDate.setUTCDate(cutoffDate.getUTCDate() - timeRange);
+  const rows = allRows.filter(r => new Date(r.date + "T00:00:00Z") >= cutoffDate);
+  
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const freq: Record<string, number> = {};
+  for (let i = 0; i <= 99; i++) {
+    freq[i.toString().padStart(2, "0")] = 0;
+  }
+
+  for (const r of rows) {
+    if (freq[r.firstTerm] !== undefined) freq[r.firstTerm]++;
+    if (freq[r.secondTerm] !== undefined) freq[r.secondTerm]++;
+    if (freq[r.thirdTerm] !== undefined) freq[r.thirdTerm]++;
+  }
+
+  const sorted = Object.entries(freq).map(([term, frequency]) => ({ term, frequency }))
+    .sort((a, b) => b.frequency - a.frequency);
+
+  const stats = sorted.map((item, i) => {
+    let label: "HOT" | "COLD" | "NORMAL" = "NORMAL";
+    if (i < 10) label = "HOT"; // top 10 are HOT
+    else if (i >= sorted.length - 10) label = "COLD"; // bottom 10 are COLD
+    return { ...item, label };
+  });
+
+  return stats;
+}
+
+export async function getPatternAnalysis(
+  strategy: StrategyType = "jump",
+  timeRange: TimeRange = 180,
+  excludeLatest = false,
+  drawFilter?: DrawName
+): Promise<PatternAnalysis> {
+  let allRows = await getHistory();
+  if (allRows.length === 0) {
+    throw new Error("No se encontraron sorteos validos.");
+  }
+
+  // Filter by draw type if specified
+  if (drawFilter) {
+    allRows = allRows.filter(r => r.draw === drawFilter);
+    if (allRows.length === 0) {
+      throw new Error(`No se encontraron sorteos para ${drawFilter}.`);
+    }
+  }
+
+  if (excludeLatest && allRows.length > 1) {
+    allRows = allRows.slice(0, -1);
+  }
+
+  // Filter rows by timeRange
+  const cutoffDate = new Date();
+  cutoffDate.setUTCDate(cutoffDate.getUTCDate() - timeRange);
+  const rows = allRows.filter(r => new Date(r.date + "T00:00:00Z") >= cutoffDate);
+  
+  if (rows.length === 0) {
+    throw new Error(`No se encontraron sorteos en ese rango de fechas${drawFilter ? ` para ${drawFilter}` : ""}.`);
   }
 
   const stats = buildJumpStats(rows);
   const latestDraws = rows.slice(-3);
   const watchlist = latestDraws.flatMap((draw) => [
-    {
-      term: draw.secondTerm,
-      origin: `${draw.date} ${draw.draw}`,
-      prize: "2do",
-      number: draw.second
-    },
-    {
-      term: draw.thirdTerm,
-      origin: `${draw.date} ${draw.draw}`,
-      prize: "3ro",
-      number: draw.third
-    }
+    { term: draw.secondTerm, origin: `${draw.date} ${draw.draw}`, prize: "2do", number: draw.second },
+    { term: draw.thirdTerm, origin: `${draw.date} ${draw.draw}`, prize: "3ro", number: draw.third }
   ]);
   const recentTerms = new Set(watchlist.map((item) => item.term));
   const maxExposures = Math.max(1, ...Object.values(stats).map((item) => item.exposures));
 
-  const picks = Object.values(stats)
-    .filter((item) => item.exposures > 0)
-    .map((item) => {
-      const jumpRate = item.exposures > 0 ? item.jumpsWithin3 / item.exposures : 0;
-      const extendedJumpRate = item.exposures > 0 ? item.jumpsExtended / item.exposures : 0;
-      const verifiedJumpRate = item.exposures > 0 ? item.verifiedJumps / item.exposures : 0;
-      const firstStrength = item.firstCount / Math.max(1, ...Object.values(stats).map((stat) => stat.firstCount));
-      const lowerLag =
-        item.lastLowerIndex === null ? Number.POSITIVE_INFINITY : rows.length - 1 - item.lastLowerIndex;
-      const recentSignal = recentTerms.has(item.term);
-      const recency = recentSignal ? 1 : lowerLag <= 5 ? 0.6 : lowerLag <= 10 ? 0.35 : 0;
-      const volume = item.exposures / maxExposures;
-      const averageJumpDelay =
-        item.jumpDelays.length > 0
-          ? roundScore(item.jumpDelays.reduce((total, delay) => total + delay, 0) / item.jumpDelays.length)
-          : null;
-      const score = roundScore(
-        100 *
-          (0.34 * recency +
-            0.22 * volume +
-            0.12 * jumpRate +
-            0.12 * extendedJumpRate +
-            0.14 * verifiedJumpRate +
-            0.06 * firstStrength)
-      );
+  let picks: Pick[] = [];
 
-      return {
-        term: item.term,
-        score,
-        exposures: item.exposures,
-        firstCount: item.firstCount,
-        secondCount: item.secondCount,
-        thirdCount: item.thirdCount,
-        jumpsWithin3: item.jumpsWithin3,
-        jumpsExtended: item.jumpsExtended,
-        verifiedJumps: item.verifiedJumps,
-        averageJumpDelay,
-        lastLowerSeen: item.lastLowerSeen || "Sin registro reciente",
-        recentSignal,
-        reason: getReason(recentSignal, item)
-      };
-    })
-    .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term))
-    .slice(0, 10);
+  const statValues = Object.values(stats);
+
+  if (strategy === "jump") {
+    picks = statValues
+      .filter((item) => item.exposures > 0)
+      .map((item) => {
+        const jumpRate = item.exposures > 0 ? item.jumpsWithin3 / item.exposures : 0;
+        const extendedJumpRate = item.exposures > 0 ? item.jumpsExtended / item.exposures : 0;
+        const verifiedJumpRate = item.exposures > 0 ? item.verifiedJumps / item.exposures : 0;
+        const firstStrength = item.firstCount / Math.max(1, ...statValues.map((stat) => stat.firstCount));
+        const lowerLag = item.lastLowerIndex === null ? Number.POSITIVE_INFINITY : rows.length - 1 - item.lastLowerIndex;
+        const recentSignal = recentTerms.has(item.term);
+        const recency = recentSignal ? 1 : lowerLag <= 5 ? 0.6 : lowerLag <= 10 ? 0.35 : 0;
+        const volume = item.exposures / maxExposures;
+        
+        const score = roundScore(
+          100 * (0.34 * recency + 0.22 * volume + 0.12 * jumpRate + 0.12 * extendedJumpRate + 0.14 * verifiedJumpRate + 0.06 * firstStrength)
+        );
+        
+        return {
+          ...item,
+          score,
+          averageJumpDelay: item.jumpDelays.length > 0 ? roundScore(item.jumpDelays.reduce((a, b) => a + b, 0) / item.jumpDelays.length) : null,
+          lastLowerSeen: item.lastLowerSeen || "Sin registro reciente",
+          recentSignal,
+          reason: getReason(recentSignal, item)
+        };
+      })
+      .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
+  } else if (strategy === "most_played") {
+    picks = statValues
+      .map(item => ({
+        ...item,
+        score: item.firstCount,
+        averageJumpDelay: null,
+        lastLowerSeen: item.lastLowerSeen || "N/A",
+        recentSignal: false,
+        reason: `Apareció ${item.firstCount} veces en el 1er premio durante los últimos ${timeRange} días.`
+      }))
+      .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
+  } else if (strategy === "hot") {
+    picks = statValues
+      .map(item => {
+        const total = item.firstCount + item.secondCount + item.thirdCount;
+        return {
+          ...item,
+          score: total,
+          averageJumpDelay: null,
+          lastLowerSeen: item.lastLowerSeen || "N/A",
+          recentSignal: false,
+          reason: `Alta frecuencia: ${total} apariciones totales en los últimos ${timeRange} días.`
+        }
+      })
+      .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
+  } else if (strategy === "cold") {
+    picks = statValues
+      .map(item => {
+        const total = item.firstCount + item.secondCount + item.thirdCount;
+        return {
+          ...item,
+          score: 1000 - total, // Invert score for sorting
+          averageJumpDelay: null,
+          lastLowerSeen: item.lastLowerSeen || "N/A",
+          recentSignal: false,
+          reason: `Ausencia notable: Solo ${total} apariciones en los últimos ${timeRange} días.`
+        }
+      })
+      .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
+  }
+
+  const globalStats = statValues
+    .map(item => ({
+      term: item.term,
+      frequency: item.firstCount + item.secondCount + item.thirdCount
+    }))
+    .sort((a, b) => b.frequency - a.frequency);
+
+  const top10Freq = globalStats[9]?.frequency || 0;
+  const bottom10Freq = globalStats[globalStats.length - 10]?.frequency || 0;
+
+  const globalStatsWithLabels = globalStats.map(item => ({
+    term: item.term,
+    frequency: item.frequency,
+    label: item.frequency >= top10Freq && item.frequency > 0 ? "HOT" : (item.frequency <= bottom10Freq ? "COLD" : "NORMAL") as "HOT" | "COLD" | "NORMAL"
+  }));
 
   return {
     generatedAt: getPanamaNow().toISOString(),
@@ -182,19 +286,22 @@ export async function getPatternAnalysis(): Promise<PatternAnalysis> {
       start: rows[0].date,
       end: rows.at(-1)?.date ?? rows[0].date
     },
-    sources: ["LotteryGuru historial paginado"]
+    sources: ["LotteryGuru historial paginado"],
+    globalStats: globalStatsWithLabels
   };
 }
 
 export async function getHistory(): Promise<DrawRow[]> {
-  const [miercolito, dominical] = await Promise.all([
+  const [miercolito, dominical, gordito, extraordinaria] = await Promise.all([
     fetchLotteryGuru(LOTTERY_GURU.Miercolito, "Miercolito"),
-    fetchLotteryGuru(LOTTERY_GURU.Dominical, "Dominical")
+    fetchLotteryGuru(LOTTERY_GURU.Dominical, "Dominical"),
+    fetchLotteryGuru(LOTTERY_GURU.Gordito, "Gordito"),
+    fetchLotteryGuru(LOTTERY_GURU.Extraordinaria, "Extraordinaria")
   ]);
   const seedRows = await getSeedHistory().catch(() => []);
 
   const unique = new Map<string, DrawRow>();
-  for (const row of [...seedRows, ...miercolito, ...dominical]) {
+  for (const row of [...seedRows, ...miercolito, ...dominical, ...gordito, ...extraordinaria]) {
     unique.set(`${row.date}|${row.draw}`, row);
   }
 
@@ -476,4 +583,3 @@ function getReason(recentSignal: boolean, item: MutableStats) {
   }
   return "Aparece con volumen en 2do/3ro dentro del historial.";
 }
-
