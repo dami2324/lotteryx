@@ -84,6 +84,11 @@ const LOTTERY_GURU = {
   Extraordinaria: "https://lotteryguru.com/panama-lottery-results/pa-extraordinaria/pa-extraordinaria-results-history"
 } as const;
 
+const PANAMA_LOTERIA = {
+  Gordito: "https://www.panamaloteria.com/resultados-sorteo-gorditodelzodiaco.php",
+  Extraordinaria: "https://www.panamaloteria.com/resultados-sorteo-extraordinario.php"
+} as const;
+
 const MONTHS: Record<string, number> = {
   Jan: 0,
   Feb: 1,
@@ -115,7 +120,10 @@ export async function getGlobalStats(draw: DrawName, timeRange: TimeRange) {
 
   const cutoffDate = new Date();
   cutoffDate.setUTCDate(cutoffDate.getUTCDate() - timeRange);
-  const rows = allRows.filter(r => new Date(r.date + "T00:00:00Z") >= cutoffDate);
+  let rows = allRows.filter(r => new Date(r.date + "T00:00:00Z") >= cutoffDate);
+  if ((draw === "Gordito" || draw === "Extraordinaria") && rows.length < 5) {
+    rows = allRows;
+  }
   
   if (rows.length === 0) {
     return [];
@@ -171,7 +179,10 @@ export async function getPatternAnalysis(
   // Filter rows by timeRange
   const cutoffDate = new Date();
   cutoffDate.setUTCDate(cutoffDate.getUTCDate() - timeRange);
-  const rows = allRows.filter(r => new Date(r.date + "T00:00:00Z") >= cutoffDate);
+  let rows = allRows.filter(r => new Date(r.date + "T00:00:00Z") >= cutoffDate);
+  if (drawFilter && (drawFilter === "Gordito" || drawFilter === "Extraordinaria") && rows.length < 5) {
+    rows = allRows;
+  }
   
   if (rows.length === 0) {
     throw new Error(`No se encontraron sorteos en ese rango de fechas${drawFilter ? ` para ${drawFilter}` : ""}.`);
@@ -274,11 +285,13 @@ export async function getPatternAnalysis(
     label: item.frequency >= top10Freq && item.frequency > 0 ? "HOT" : (item.frequency <= bottom10Freq ? "COLD" : "NORMAL") as "HOT" | "COLD" | "NORMAL"
   }));
 
+  const topTen = completeTopTen(picks, statValues);
+
   return {
     generatedAt: getPanamaNow().toISOString(),
     nextDraw: getNextDraw(),
-    topFive: picks.slice(0, 5),
-    backups: picks.slice(5, 10),
+    topFive: topTen.slice(0, 5),
+    backups: topTen.slice(5, 10),
     watchlist,
     latestDraws,
     totalDraws: rows.length,
@@ -286,22 +299,32 @@ export async function getPatternAnalysis(
       start: rows[0].date,
       end: rows.at(-1)?.date ?? rows[0].date
     },
-    sources: ["LotteryGuru historial paginado"],
+    sources: ["LotteryGuru historial paginado", "PanamaLoteria resultados especiales"],
     globalStats: globalStatsWithLabels
   };
 }
 
 export async function getHistory(): Promise<DrawRow[]> {
-  const [miercolito, dominical, gordito, extraordinaria] = await Promise.all([
+  const [miercolito, dominical, gorditoGuru, extraordinariaGuru, gorditoPanama, extraordinariaPanama] = await Promise.all([
     fetchLotteryGuru(LOTTERY_GURU.Miercolito, "Miercolito"),
     fetchLotteryGuru(LOTTERY_GURU.Dominical, "Dominical"),
     fetchLotteryGuru(LOTTERY_GURU.Gordito, "Gordito"),
-    fetchLotteryGuru(LOTTERY_GURU.Extraordinaria, "Extraordinaria")
+    fetchLotteryGuru(LOTTERY_GURU.Extraordinaria, "Extraordinaria"),
+    fetchPanamaLoteria(PANAMA_LOTERIA.Gordito, "Gordito"),
+    fetchPanamaLoteria(PANAMA_LOTERIA.Extraordinaria, "Extraordinaria")
   ]);
   const seedRows = await getSeedHistory().catch(() => []);
 
   const unique = new Map<string, DrawRow>();
-  for (const row of [...seedRows, ...miercolito, ...dominical, ...gordito, ...extraordinaria]) {
+  for (const row of [
+    ...seedRows,
+    ...miercolito,
+    ...dominical,
+    ...gorditoGuru,
+    ...extraordinariaGuru,
+    ...gorditoPanama,
+    ...extraordinariaPanama
+  ]) {
     unique.set(`${row.date}|${row.draw}`, row);
   }
 
@@ -311,6 +334,22 @@ export async function getHistory(): Promise<DrawRow[]> {
   });
 
   return rows;
+}
+
+async function fetchPanamaLoteria(url: string, draw: DrawName): Promise<DrawRow[]> {
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      "User-Agent": "Mozilla/5.0 LotteryX/1.0"
+    }
+  }).catch(() => null);
+
+  if (!response?.ok) {
+    return [];
+  }
+
+  const html = await response.text();
+  return parsePanamaLoteriaPage(html, draw);
 }
 
 async function fetchLotteryGuru(baseUrl: string, draw: DrawName): Promise<DrawRow[]> {
@@ -424,6 +463,46 @@ function parseLotteryGuruPage(html: string, draw: DrawName): DrawRow[] {
       }
     ];
   });
+}
+
+function parsePanamaLoteriaPage(html: string, draw: DrawName): DrawRow[] {
+  const rows: DrawRow[] = [];
+  const drawLabel = draw === "Gordito" ? "Gordito Del Zodiaco" : "Extraordinario";
+
+  for (const match of html.matchAll(/<tr[^>]*>[\s\S]*?<\/tr>/g)) {
+    const rowHtml = match[0];
+    const dateMatch = rowHtml.match(new RegExp(`${drawLabel}\\s+(\\d{2})\\/(\\d{2})\\/(\\d{4})`, "i"));
+
+    if (!dateMatch) {
+      continue;
+    }
+
+    const numbers = [...rowHtml.matchAll(/label-numero">(\d{2,5})<\/span>/g)].map((item) => item[1]);
+    if (numbers.length < 3) {
+      continue;
+    }
+
+    const [, day, month, year] = dateMatch;
+    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+    if (date < new Date(`${HISTORY_START}T00:00:00.000Z`)) {
+      continue;
+    }
+
+    const [first, second, third] = numbers.slice(0, 3);
+    rows.push({
+      date: toDateKey(date),
+      draw,
+      first,
+      second,
+      third,
+      firstTerm: toTerm(first),
+      secondTerm: toTerm(second),
+      thirdTerm: toTerm(third),
+      source: "PanamaLoteria"
+    });
+  }
+
+  return rows;
 }
 
 function parseLastPage(html: string): number | null {
@@ -554,6 +633,10 @@ function toDateKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+function toTerm(number: string) {
+  return number.slice(-2).padStart(2, "0");
+}
+
 function formatSpanishDate(date: Date) {
   return new Intl.DateTimeFormat("es-PA", {
     timeZone: "UTC",
@@ -582,4 +665,32 @@ function getReason(recentSignal: boolean, item: MutableStats) {
     return "Tiene brinco comprobado en sorteos posteriores.";
   }
   return "Aparece con volumen en 2do/3ro dentro del historial.";
+}
+
+function completeTopTen(picks: Pick[], statValues: MutableStats[]): Pick[] {
+  const used = new Set(picks.map((pick) => pick.term));
+  const fallback: Pick[] = statValues
+    .filter((item) => !used.has(item.term))
+    .map((item) => {
+      const total = item.firstCount + item.secondCount + item.thirdCount;
+      return {
+        term: item.term,
+        score: roundScore(total),
+        exposures: item.exposures,
+        firstCount: item.firstCount,
+        secondCount: item.secondCount,
+        thirdCount: item.thirdCount,
+        jumpsWithin3: item.jumpsWithin3,
+        jumpsExtended: item.jumpsExtended,
+        verifiedJumps: item.verifiedJumps,
+        averageJumpDelay:
+          item.jumpDelays.length > 0 ? roundScore(item.jumpDelays.reduce((a, b) => a + b, 0) / item.jumpDelays.length) : null,
+        lastLowerSeen: item.lastLowerSeen || "Sin registro",
+        reason: "Completa el Top 10 con frecuencia disponible del sorteo.",
+        recentSignal: false
+      };
+    })
+    .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
+
+  return [...picks, ...fallback].slice(0, 10);
 }
