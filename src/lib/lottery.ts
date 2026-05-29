@@ -420,7 +420,7 @@ async function getSeedHistory(): Promise<DrawRow[]> {
 
   for (const line of content.split(/\r?\n/)) {
     const match = line.match(
-      /^(\d{4}-\d{2}-\d{2}) \| (Miercolito|Dominical) \| 1ro (\d{4}) term (\d{2}) \| 2do (\d{4}) term (\d{2}) \| 3ro (\d{4}) term (\d{2}) \| Fuente (.+)$/
+      /^(\d{4}-\d{2}-\d{2}) \| (Miercolito|Dominical|Gordito|Extraordinaria) \| 1ro (\d+) term (\d{2}) \| 2do (\d+) term (\d{2}) \| 3ro (\d+) term (\d{2}) \| Fuente (.+)$/
     );
 
     if (!match) {
