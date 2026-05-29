@@ -587,11 +587,6 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
       <nav className="pill-tabs">
         {([
           { id: "wizard" as const, icon: "🎯", label: "Sorteo" },
-
-      {/* PILL TABS */}
-      <nav className="pill-tabs">
-        {([
-          { id: "wizard" as const, icon: "🎯", label: "Sorteo" },
           { id: "stats" as const, icon: "📊", label: "Estadísticas" },
           { id: "favorites" as const, icon: "⭐", label: "Favoritos" },
           { id: "tickets" as const, icon: "☑️", label: "Verificar" },
