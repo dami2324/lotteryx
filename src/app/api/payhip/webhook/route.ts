@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, skipped: true, reason: "Usuario no encontrado" });
   }
 
-  if (payload.type === "subscription.created" || payload.type === "paid") {
+  if (payload.type !== "subscription.deleted" && payload.type !== "subscription.canceled") {
     const startMs = Math.max(Date.now(), user.proUntil ? new Date(user.proUntil).getTime() : 0);
     user.plan = "pro";
     user.subscriptionStatus = "active";
