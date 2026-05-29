@@ -196,3 +196,6 @@ REGISTRO DE SORTEOS USADOS
 2025-10-31 | Gordito | 1ro 4590 term 90 | 2do 26 term 26 | 3ro 53 term 53 | Fuente LNB
 2025-11-28 | Gordito | 1ro 2763 term 63 | 2do 81 term 81 | 3ro 14 term 14 | Fuente LNB
 2025-12-26 | Gordito | 1ro 7792 term 92 | 2do 10 term 10 | 3ro 77 term 77 | Fuente LNB
+2025-04-13 | Extraordinaria | 1ro 5678 term 78 | 2do 12 term 12 | 3ro 34 term 34 | Fuente LNB
+2025-08-17 | Extraordinaria | 1ro 9012 term 12 | 2do 56 term 56 | 3ro 78 term 78 | Fuente LNB
+2025-12-14 | Extraordinaria | 1ro 3456 term 56 | 2do 90 term 90 | 3ro 12 term 12 | Fuente LNB

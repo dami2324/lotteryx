@@ -95,16 +95,26 @@ function renderPicksEmail(user: LotteryXUser, analysis: PatternAnalysis, drawNam
 
         <!-- Body -->
         <div style="padding:28px 32px">
-          <p style="margin:0 0 24px;color:#94a3b8;font-size:15px">Hola <strong style="color:#e2e8f0">${user.name}</strong>, aqui estan tus 10 picks para <strong style="color:#e2e8f0">${drawName}</strong> con la estrategia <strong style="color:#e2e8f0">${strategy ?? user.favoriteStrategy ?? "jump"}</strong>:</p>
+          <p style="margin:0 0 24px;color:#94a3b8;font-size:15px">Hola <strong style="color:#e2e8f0">${user.name}</strong>, aqui estan tus resultados para <strong style="color:#e2e8f0">${drawName}</strong> con la estrategia <strong style="color:#e2e8f0">${strategy === "last_year" ? "Jugó el año pasado" : (strategy ?? user.favoriteStrategy ?? "jump")}</strong>:</p>
 
-          ${renderPickGroup("⭐ Top 5 — Principales", analysis.topFive)}
-          ${renderPickGroup("🔵 5 Backup", analysis.backups)}
-          ${renderTickets(analysis.generatedTickets)}
+          ${strategy === "last_year" && analysis.lastYearDraw ? `
+            <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:20px;margin-bottom:24px;border-left:4px solid #6366f1">
+              <h2 style="margin:0 0 16px;font-size:16px;color:#e2e8f0;text-transform:uppercase;letter-spacing:1px">📅 Sorteo del año pasado</h2>
+              <p style="margin:0 0 16px;font-size:14px;color:#94a3b8">${analysis.lastYearDraw.date} - ${analysis.lastYearDraw.draw}</p>
+              ${renderPrizeRow("🥇 1er Premio", analysis.lastYearDraw.first, analysis.lastYearDraw.firstTerm)}
+              ${renderPrizeRow("🥈 2do Premio", analysis.lastYearDraw.second, analysis.lastYearDraw.secondTerm)}
+              ${renderPrizeRow("🥉 3er Premio", analysis.lastYearDraw.third, analysis.lastYearDraw.thirdTerm)}
+            </div>
+          ` : `
+            ${renderPickGroup("⭐ Top 5 — Principales", analysis.topFive)}
+            ${renderPickGroup("🔵 5 Backup", analysis.backups)}
+            ${renderTickets(analysis.generatedTickets)}
 
-          <p style="margin:28px 0 0;padding:16px;background:rgba(99,102,241,0.1);border-left:3px solid #6366f1;border-radius:4px;color:#94a3b8;font-size:13px;line-height:1.6">
-            Estos números siguen el patrón LotteryX: terminaciones que salen en 2do/3er premio y luego saltan al 1er premio.
-            Es un análisis estadístico, no una garantía.
-          </p>
+            <p style="margin:28px 0 0;padding:16px;background:rgba(99,102,241,0.1);border-left:3px solid #6366f1;border-radius:4px;color:#94a3b8;font-size:13px;line-height:1.6">
+              Estos números siguen el patrón LotteryX o tu estrategia elegida.
+              Es un análisis estadístico, no una garantía.
+            </p>
+          `}
         </div>
 
         <!-- Footer -->
