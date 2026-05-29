@@ -645,7 +645,7 @@ function findLastYearDraw(rows: DrawRow[], drawFilter?: DrawName) {
 
   const target = drawFilter === "Miercolito" || drawFilter === "Dominical"
     ? getNextDateForDraw(drawFilter)
-    : new Date(`${filteredRows.at(-1)?.date ?? HISTORY_START}T00:00:00.000Z`);
+    : getPanamaNow();
   const lastYearTarget = new Date(Date.UTC(target.getUTCFullYear() - 1, target.getUTCMonth(), target.getUTCDate()));
 
   return filteredRows
