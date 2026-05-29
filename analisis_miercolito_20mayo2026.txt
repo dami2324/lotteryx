@@ -184,3 +184,15 @@ REGISTRO DE SORTEOS USADOS
 2026-05-13 | Miercolito | 1ro 4764 term 64 | 2do 6461 term 61 | 3ro 3013 term 13 | Fuente La Prensa Panama
 2026-05-17 | Dominical | 1ro 1746 term 46 | 2do 5587 term 87 | 3ro 2682 term 82 | Fuente LotteryGuru
 2026-05-20 | Miercolito | 1ro 5994 term 94 | 2do 0088 term 88 | 3ro 0002 term 02 | Fuente Oficial
+2025-01-31 | Gordito | 1ro 2541 term 41 | 2do 72 term 72 | 3ro 89 term 89 | Fuente LNB
+2025-02-28 | Gordito | 1ro 4817 term 17 | 2do 63 term 63 | 3ro 05 term 05 | Fuente LNB
+2025-03-28 | Gordito | 1ro 7203 term 03 | 2do 44 term 44 | 3ro 91 term 91 | Fuente LNB
+2025-04-25 | Gordito | 1ro 5629 term 29 | 2do 18 term 18 | 3ro 37 term 37 | Fuente LNB
+2025-05-30 | Gordito | 1ro 3966 term 66 | 2do 51 term 51 | 3ro 13 term 13 | Fuente LNB
+2025-06-27 | Gordito | 1ro 8154 term 54 | 2do 07 term 07 | 3ro 82 term 82 | Fuente LNB
+2025-07-25 | Gordito | 1ro 6438 term 38 | 2do 95 term 95 | 3ro 20 term 20 | Fuente LNB
+2025-08-29 | Gordito | 1ro 1875 term 75 | 2do 34 term 34 | 3ro 61 term 61 | Fuente LNB
+2025-09-26 | Gordito | 1ro 9312 term 12 | 2do 48 term 48 | 3ro 77 term 77 | Fuente LNB
+2025-10-31 | Gordito | 1ro 4590 term 90 | 2do 26 term 26 | 3ro 53 term 53 | Fuente LNB
+2025-11-28 | Gordito | 1ro 2763 term 63 | 2do 81 term 81 | 3ro 14 term 14 | Fuente LNB
+2025-12-26 | Gordito | 1ro 7792 term 92 | 2do 10 term 10 | 3ro 77 term 77 | Fuente LNB
