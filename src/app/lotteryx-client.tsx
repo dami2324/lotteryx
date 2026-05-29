@@ -1115,9 +1115,16 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   <li>⭐ Alertas de Resultados del Sorteo</li>
                   <li>⭐ Generador y Rastreador de Billetes</li>
                 </ul>
-                <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile?.email || "")}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ width: "100%", marginTop: "auto" }}>
+                <button 
+                  className="premium-upgrade-btn" 
+                  style={{ width: "100%", marginTop: "auto", padding: "16px", border: "none", cursor: "pointer" }}
+                  onClick={() => {
+                    const btn = document.querySelector('.app-header .payhip-buy-button') as HTMLAnchorElement;
+                    if (btn) btn.click();
+                  }}
+                >
                   🚀 Actualizar a Pro
-                </a>
+                </button>
               </div>
             </div>
           </div>
