@@ -596,7 +596,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
             key={tab.id}
             className={`pill-btn ${activeTab === tab.id ? "active" : ""}`}
             onClick={() => {
-              if (tab.id === "stats" && !isPro) {
+              if ((tab.id === "stats" || tab.id === "favorites") && !isPro) {
                 setShowPricingModal(true);
               } else {
                 setActiveTab(tab.id);
@@ -1107,11 +1107,13 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
               <div className="plan-card pro">
                 <h3>Plan Pro</h3>
                 <ul>
-                  <li>⭐ Todos los Sorteos</li>
-                  <li>⭐ Estrategias Premium (Brinco, etc.)</li>
+                  <li>⭐ Todos los Sorteos (Gordito, Extraordinaria)</li>
+                  <li>⭐ Estrategias Premium (Histórico, Brinco, etc.)</li>
                   <li>⭐ Top 10 Números Desbloqueados</li>
-                  <li>⭐ Estadísticas Detalladas</li>
-                  <li>⭐ Generador de Billetes</li>
+                  <li>⭐ Estadísticas Detalladas por Sorteo</li>
+                  <li>⭐ Mis Favoritos con Historial de Aciertos</li>
+                  <li>⭐ Alertas de Resultados del Sorteo</li>
+                  <li>⭐ Generador y Rastreador de Billetes</li>
                 </ul>
                 <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile?.email || "")}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ width: "100%", marginTop: "auto" }}>
                   🚀 Actualizar a Pro
