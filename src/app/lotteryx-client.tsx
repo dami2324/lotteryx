@@ -347,7 +347,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
   function handleUpgrade() {
     if (!profile) return;
-    const url = `https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`;
+    const url = `https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`;
     window.location.href = url;
   }
 
@@ -577,7 +577,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         {isPro ? (
           <div className="plan-pill pro">Pro activo</div>
         ) : (
-          <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy">
+          <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy">
             🚀 Desbloquear Pro
           </a>
         )}
@@ -793,7 +793,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                     {!isPro && (
                       <div style={{ textAlign: "center", margin: "30px 0" }}>
                         <p style={{ color: "var(--text-muted)", marginBottom: "16px", fontSize: "15px" }}>Los 7 números con mayor puntuación están en el plan Pro</p>
-                        <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "16px 32px", fontSize: "16px" }}>
+                        <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "16px 32px", fontSize: "16px" }}>
                           🌟 Actualizar Ahora
                         </a>
                       </div>
@@ -1063,17 +1063,25 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                       {g.timeRange} días | Estrategia: {STRATEGIES.find(s => s.id === g.strategy)?.label || g.strategy}
                     </span>
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                    {g.picks.map(p => (
-                      <span key={p} style={{ background: "rgba(255,255,255,0.1)", padding: "2px 8px", borderRadius: "12px", fontSize: "0.9em" }}>{p}</span>
-                    ))}
-                  </div>
-                  {g.tickets && g.tickets.length > 0 && (
-                    <div className="history-ticket-row">
-                      <span>Billetes:</span>
-                      {g.tickets.map(t => (
-                        <strong key={t}>{t}</strong>
-                      ))}
+                  {g.strategy !== "last_year" ? (
+                    <>
+                      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                        {g.picks.map(p => (
+                          <span key={p} style={{ background: "rgba(255,255,255,0.1)", padding: "2px 8px", borderRadius: "12px", fontSize: "0.9em" }}>{p}</span>
+                        ))}
+                      </div>
+                      {g.tickets && g.tickets.length > 0 && (
+                        <div className="history-ticket-row">
+                          <span>Billetes:</span>
+                          {g.tickets.map(t => (
+                            <strong key={t}>{t}</strong>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ fontStyle: "italic", opacity: 0.7, fontSize: "0.9em", padding: "4px 0" }}>
+                      Sorteo histórico (Los resultados se muestran en el panel principal).
                     </div>
                   )}
                 </div>
