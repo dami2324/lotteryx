@@ -68,6 +68,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"wizard" | "stats" | "favorites" | "tickets" | "profile">("wizard");
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Wizard step state
   const [wizardStep, setWizardStep] = useState(1);
@@ -586,6 +587,11 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
       <nav className="pill-tabs">
         {([
           { id: "wizard" as const, icon: "🎯", label: "Sorteo" },
+
+      {/* PILL TABS */}
+      <nav className="pill-tabs">
+        {([
+          { id: "wizard" as const, icon: "🎯", label: "Sorteo" },
           { id: "stats" as const, icon: "📊", label: "Estadísticas" },
           { id: "favorites" as const, icon: "⭐", label: "Favoritos" },
           { id: "tickets" as const, icon: "☑️", label: "Verificar" },
@@ -594,7 +600,13 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           <button
             key={tab.id}
             className={`pill-btn ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              if (tab.id === "stats" && !isPro) {
+                setShowPricingModal(true);
+              } else {
+                setActiveTab(tab.id);
+              }
+            }}
           >
             <span className="pill-icon">{tab.icon}</span>
             <span className="pill-label">{tab.label}</span>
@@ -624,17 +636,26 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                     <h2 className="wizard-title">Escoge tu Sorteo</h2>
                     <p className="wizard-subtitle">¿En cuál sorteo vas a jugar?</p>
                     <div className="icon-grid">
-                      {availableDraws.map(d => (
+                      {DRAWS.map(d => {
+                        const locked = !isPro && !FREE_DRAWS.has(d.id);
+                        return (
                         <button
                           key={d.id}
-                          className={`icon-card ${wizardDraw === d.id ? "selected" : ""}`}
-                          onClick={() => { setWizardDraw(d.id); setWizardStep(2); }}
+                          className={`icon-card ${wizardDraw === d.id ? "selected" : ""} ${locked ? "locked-option" : ""}`}
+                          onClick={() => {
+                            if (locked) {
+                              setShowPricingModal(true);
+                              return;
+                            }
+                            setWizardDraw(d.id); setWizardStep(2); 
+                          }}
                         >
                           <span className="icon-card-emoji">{d.icon}</span>
                           <span className="icon-card-label">{d.label}</span>
                           <span className="icon-card-desc">{d.desc}</span>
+                          {locked && <span className="lock-chip">🔒 Pro</span>}
                         </button>
-                      ))}
+                      )})}
                     </div>
                   </div>
                 )}
@@ -653,7 +674,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                           className={`icon-card ${wizardStrategy === s.id ? "selected" : ""} ${locked ? "locked-option" : ""}`}
                           onClick={() => {
                             if (locked) {
-                              handleUpgrade();
+                              setShowPricingModal(true);
                               return;
                             }
                             setWizardStrategy(s.id);
@@ -1061,6 +1082,43 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           </div>
         )}
       </div>
+
+      {/* ========== PRICING MODAL ========== */}
+      {showPricingModal && (
+        <div className="modal-overlay fade-in" onClick={() => setShowPricingModal(false)}>
+          <div className="pricing-modal" onClick={e => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setShowPricingModal(false)}>×</button>
+            <h2 className="modal-title">Elige tu Plan</h2>
+            <p className="modal-subtitle">Desbloquea todo el poder de la estadística y aumenta tus probabilidades.</p>
+            <div className="pricing-cards">
+              <div className="plan-card free">
+                <h3>Plan Gratis</h3>
+                <ul>
+                  <li>✅ 2 Sorteos (Miercolito, Dominical)</li>
+                  <li>✅ Estrategias Básicas</li>
+                  <li>❌ Mejores 7 Números</li>
+                  <li>❌ Estadísticas Avanzadas</li>
+                  <li>❌ Sorteos Especiales</li>
+                </ul>
+                <button className="current-plan-btn" disabled>Tu plan actual</button>
+              </div>
+              <div className="plan-card pro">
+                <h3>Plan Pro</h3>
+                <ul>
+                  <li>⭐ Todos los Sorteos</li>
+                  <li>⭐ Estrategias Premium (Brinco, etc.)</li>
+                  <li>⭐ Top 10 Números Desbloqueados</li>
+                  <li>⭐ Estadísticas Detalladas</li>
+                  <li>⭐ Generador de Billetes</li>
+                </ul>
+                <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile?.email || "")}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ width: "100%", marginTop: "auto" }}>
+                  🚀 Actualizar a Pro
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
