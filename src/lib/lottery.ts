@@ -370,19 +370,47 @@ export async function getHistory(): Promise<DrawRow[]> {
 }
 
 async function fetchPanamaLoteria(url: string, draw: DrawName): Promise<DrawRow[]> {
-  const response = await fetch(url, {
+  const allRows: DrawRow[] = [];
+  const currentYear = new Date().getFullYear();
+  const yearsToFetch = [currentYear - 1, currentYear]; // fetch last year + this year
+
+  for (const year of yearsToFetch) {
+    const yearUrl = `${url}?ano=${year}`;
+    const response = await fetch(yearUrl, {
+      cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0 LotteryX/1.0"
+      }
+    }).catch(() => null);
+
+    if (!response?.ok) {
+      continue;
+    }
+
+    const html = await response.text();
+    allRows.push(...parsePanamaLoteriaPage(html, draw));
+  }
+
+  // Also fetch the default page (no year param) as fallback
+  const defaultResponse = await fetch(url, {
     cache: "no-store",
     headers: {
       "User-Agent": "Mozilla/5.0 LotteryX/1.0"
     }
   }).catch(() => null);
 
-  if (!response?.ok) {
-    return [];
+  if (defaultResponse?.ok) {
+    const html = await defaultResponse.text();
+    allRows.push(...parsePanamaLoteriaPage(html, draw));
   }
 
-  const html = await response.text();
-  return parsePanamaLoteriaPage(html, draw);
+  // Deduplicate by date
+  const unique = new Map<string, DrawRow>();
+  for (const row of allRows) {
+    unique.set(row.date, row);
+  }
+
+  return [...unique.values()];
 }
 
 async function fetchLotteryGuru(baseUrl: string, draw: DrawName): Promise<DrawRow[]> {
