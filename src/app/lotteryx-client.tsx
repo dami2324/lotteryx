@@ -36,7 +36,7 @@ const STRATEGIES = [
   { id: "cold", label: "Fríos", icon: "❄️", desc: "Mayor ausencia reciente" },
   { id: "most_played", label: "Más Jugados", icon: "🏆", desc: "Más veces en 1er premio" },
   { id: "jump", label: "Patrón Brinco", icon: "🦘", desc: "Salto de 2do/3ro a 1ro" },
-  { id: "last_year", label: "Histórico Anual", icon: "📅", desc: "Puede salir de nuevo en este sorteo" },
+  { id: "last_year", label: "Jugó el año pasado", icon: "📅", desc: "Puede salir de nuevo en este sorteo" },
 ];
 
 const FREE_DRAWS = new Set<DrawType>(["Miercolito", "Dominical"]);
@@ -728,15 +728,10 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   ← Nueva Generación
                 </button>
 
-                <h2 style={{ marginBottom: "0.5rem" }}>Tus 10 Recomendaciones</h2>
-                <p className="wizard-subtitle" style={{ marginBottom: "1.5rem" }}>
-                  {DRAWS.find(d => d.id === wizardDraw)?.icon} {wizardDraw} • {STRATEGIES.find(s => s.id === wizardStrategy)?.icon} {STRATEGIES.find(s => s.id === wizardStrategy)?.label} • {wizardTimeRange} días
-                </p>
-
-                {wizardStrategy === "last_year" && currentAnalysis.lastYearDraw && (
-                  <section className="last-year-panel">
+                {wizardStrategy === "last_year" && currentAnalysis.lastYearDraw ? (
+                  <section className="last-year-panel" style={{ marginTop: "1rem" }}>
                     <div>
-                      <span className="panel-kicker">Sorteo Histórico Anual</span>
+                      <span className="panel-kicker">Sorteo del año pasado</span>
                       <h3>{currentAnalysis.lastYearDraw.date} - {currentAnalysis.lastYearDraw.draw}</h3>
                     </div>
                     <div className="last-year-prizes">
@@ -745,69 +740,76 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                       <div><span>3ro</span><strong>{currentAnalysis.lastYearDraw.third}</strong></div>
                     </div>
                   </section>
-                )}
+                ) : (
+                  <>
+                    <h2 style={{ marginBottom: "0.5rem" }}>Tus 10 Recomendaciones</h2>
+                    <p className="wizard-subtitle" style={{ marginBottom: "1.5rem" }}>
+                      {DRAWS.find(d => d.id === wizardDraw)?.icon} {wizardDraw} • {STRATEGIES.find(s => s.id === wizardStrategy)?.icon} {STRATEGIES.find(s => s.id === wizardStrategy)?.label} • {wizardTimeRange} días
+                    </p>
 
-                <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem", justifyContent: "center" }}>
-                  <button onClick={shareResults} style={{ padding: "0.5rem 1rem", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: "bold" }}>
-                    📤 Compartir
-                  </button>
-                  <button onClick={downloadResults} style={{ padding: "0.5rem 1rem", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: "bold" }}>
-                    ⬇️ Descargar
-                  </button>
-                </div>
+                    <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem", justifyContent: "center" }}>
+                      <button onClick={shareResults} style={{ padding: "0.5rem 1rem", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: "bold" }}>
+                        📤 Compartir
+                      </button>
+                      <button onClick={downloadResults} style={{ padding: "0.5rem 1rem", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: "bold" }}>
+                        ⬇️ Descargar
+                      </button>
+                    </div>
 
-                <div className="results-grid">
-                  {displayPicks.map(({ pick, locked }, i) => {
-                    const isFav = userFavs.includes(pick.term);
-                    return (
-                      <div 
-                        key={`${pick.term}-${i}`} 
-                        className={`result-card fade-in ${locked ? "locked-result" : ""}`} 
-                        style={{ animationDelay: `${i * 0.06}s`, cursor: locked ? "pointer" : "default" }}
-                        onClick={() => {
-                          if (locked) setShowPricingModal(true);
-                        }}
-                      >
-                        {locked && <div className="result-lock">🔒 Pro</div>}
-                        <div className={locked ? "blurred-result" : ""}>
-                          <div className="result-card-top">
-                            <span className="result-number">{pick.term}</span>
-                            <button className={`fav-btn ${isFav ? "active" : ""}`} onClick={() => !locked && toggleFavorite(pick.term)} disabled={locked}>
-                              {isFav ? "★" : "☆"}
-                            </button>
+                    <div className="results-grid">
+                      {displayPicks.map(({ pick, locked }, i) => {
+                        const isFav = userFavs.includes(pick.term);
+                        return (
+                          <div 
+                            key={`${pick.term}-${i}`} 
+                            className={`result-card fade-in ${locked ? "locked-result" : ""}`} 
+                            style={{ animationDelay: `${i * 0.06}s`, cursor: locked ? "pointer" : "default" }}
+                            onClick={() => {
+                              if (locked) setShowPricingModal(true);
+                            }}
+                          >
+                            {locked && <div className="result-lock">🔒 Pro</div>}
+                            <div className={locked ? "blurred-result" : ""}>
+                              <div className="result-card-top">
+                                <span className="result-number">{pick.term}</span>
+                                <button className={`fav-btn ${isFav ? "active" : ""}`} onClick={() => !locked && toggleFavorite(pick.term)} disabled={locked}>
+                                  {isFav ? "★" : "☆"}
+                                </button>
+                              </div>
+                              <div className="result-score">
+                                <span className="score-badge">Score {pick.score}</span>
+                                {pick.recentSignal && <span className="hot-badge">HOT</span>}
+                              </div>
+                              <p className="result-reason">{pick.reason}</p>
+                            </div>
                           </div>
-                          <div className="result-score">
-                            <span className="score-badge">Score {pick.score}</span>
-                            {pick.recentSignal && <span className="hot-badge">HOT</span>}
-                          </div>
-                          <p className="result-reason">{pick.reason}</p>
-                        </div>
+                        );
+                      })}
+                    </div>
+
+                    {!isPro && (
+                      <div style={{ textAlign: "center", margin: "30px 0" }}>
+                        <p style={{ color: "var(--text-muted)", marginBottom: "16px", fontSize: "15px" }}>Los 7 números con mayor puntuación están en el plan Pro</p>
+                        <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "16px 32px", fontSize: "16px" }}>
+                          🌟 Actualizar Ahora
+                        </a>
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
 
-                {!isPro && (
-                  <div style={{ textAlign: "center", margin: "30px 0" }}>
-                    <p style={{ color: "var(--text-muted)", marginBottom: "16px", fontSize: "15px" }}>Los 7 números con mayor puntuación están en el plan Pro</p>
-                    <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "16px 32px", fontSize: "16px" }}>
-                      🌟 Actualizar Ahora
-                    </a>
-                  </div>
-                )}
-
-                {isPro && (currentAnalysis.generatedTickets || []).length > 0 && (
-                  <section className="ticket-suggestions">
-                    <div>
-                      <span className="panel-kicker">Billetes sugeridos</span>
-                      <h3>5 jugadas de 4 numeros</h3>
-                    </div>
-                    <div className="ticket-suggestion-grid">
-                      {(currentAnalysis.generatedTickets || []).map((ticket) => (
-                        <span key={ticket}>{ticket}</span>
-                      ))}
-                    </div>
-                  </section>
+                    {isPro && (currentAnalysis.generatedTickets || []).length > 0 && (
+                      <section className="ticket-suggestions">
+                        <div>
+                          <span className="panel-kicker">Billetes sugeridos</span>
+                          <h3>5 jugadas de 4 numeros</h3>
+                        </div>
+                        <div className="ticket-suggestion-grid">
+                          {(currentAnalysis.generatedTickets || []).map((ticket) => (
+                            <span key={ticket}>{ticket}</span>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </>
                 )}
               </div>
             )}
