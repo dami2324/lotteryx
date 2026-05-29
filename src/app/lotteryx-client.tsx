@@ -742,7 +742,10 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   </section>
                 ) : (
                   <>
-                    <h2 style={{ marginBottom: "0.5rem" }}>Tus 10 Recomendaciones</h2>
+                    <h2 style={{ marginBottom: "0.5rem", fontSize: "1.3rem", lineHeight: "1.4" }}>
+                      Tus recomendaciones para hoy {wizardDraw === "Gordito" ? "Gordito del Zodiaco" : wizardDraw === "Extraordinaria" ? "Sorteo Extraordinario" : wizardDraw} <br/>
+                      <span style={{ fontSize: "1rem", color: "var(--color-primary)", fontWeight: "normal" }}>{new Date().toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    </h2>
                     <p className="wizard-subtitle" style={{ marginBottom: "1.5rem" }}>
                       {DRAWS.find(d => d.id === wizardDraw)?.icon} {wizardDraw} • {STRATEGIES.find(s => s.id === wizardStrategy)?.icon} {STRATEGIES.find(s => s.id === wizardStrategy)?.label} • {wizardTimeRange} días
                     </p>
