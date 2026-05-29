@@ -36,7 +36,7 @@ const STRATEGIES = [
   { id: "cold", label: "Fríos", icon: "❄️", desc: "Mayor ausencia reciente" },
   { id: "most_played", label: "Más Jugados", icon: "🏆", desc: "Más veces en 1er premio" },
   { id: "jump", label: "Patrón Brinco", icon: "🦘", desc: "Salto de 2do/3ro a 1ro" },
-  { id: "last_year", label: "Jugo el ano pasado", icon: "LY", desc: "Mismo sorteo del ano pasado" },
+  { id: "last_year", label: "Histórico Anual", icon: "📅", desc: "Puede salir de nuevo en este sorteo" },
 ];
 
 const FREE_DRAWS = new Set<DrawType>(["Miercolito", "Dominical"]);
@@ -736,7 +736,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                 {wizardStrategy === "last_year" && currentAnalysis.lastYearDraw && (
                   <section className="last-year-panel">
                     <div>
-                      <span className="panel-kicker">Sorteo del ano pasado</span>
+                      <span className="panel-kicker">Sorteo Histórico Anual</span>
                       <h3>{currentAnalysis.lastYearDraw.date} - {currentAnalysis.lastYearDraw.draw}</h3>
                     </div>
                     <div className="last-year-prizes">
@@ -760,8 +760,15 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   {displayPicks.map(({ pick, locked }, i) => {
                     const isFav = userFavs.includes(pick.term);
                     return (
-                      <div key={`${pick.term}-${i}`} className={`result-card fade-in ${locked ? "locked-result" : ""}`} style={{ animationDelay: `${i * 0.06}s` }}>
-                        {locked && <div className="result-lock">🔒</div>}
+                      <div 
+                        key={`${pick.term}-${i}`} 
+                        className={`result-card fade-in ${locked ? "locked-result" : ""}`} 
+                        style={{ animationDelay: `${i * 0.06}s`, cursor: locked ? "pointer" : "default" }}
+                        onClick={() => {
+                          if (locked) setShowPricingModal(true);
+                        }}
+                      >
+                        {locked && <div className="result-lock">🔒 Pro</div>}
                         <div className={locked ? "blurred-result" : ""}>
                           <div className="result-card-top">
                             <span className="result-number">{pick.term}</span>
@@ -868,7 +875,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           <div className="fade-in">
             <h2 style={{ marginBottom: "1.5rem" }}>Mis Favoritos</h2>
             {!isPro && (
-              <button className="upgrade-banner" onClick={handleUpgrade}>
+              <button className="upgrade-banner" onClick={() => setShowPricingModal(true)}>
                 Favoritos con historial de aciertos estan disponibles en Pro → Actualizar
               </button>
             )}
