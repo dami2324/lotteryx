@@ -9,7 +9,8 @@ const emailFrom = process.env.EMAIL_FROM ?? "LotteryX <onboarding@resend.dev>";
 export async function sendPicksEmail(
   user: LotteryXUser,
   analysis: PatternAnalysis,
-  drawName?: string
+  drawName?: string,
+  strategy?: string
 ) {
   if (!resendApiKey) return { sent: false, reason: "RESEND_API_KEY no configurado" };
   if (user.notificationEmail === false) return { sent: false, reason: "Notificaciones desactivadas" };
@@ -26,7 +27,7 @@ export async function sendPicksEmail(
       from: emailFrom,
       to: user.email,
       subject: `🍀 LotteryX: Tus números para el sorteo de hoy — ${draw}`,
-      html: renderPicksEmail(user, analysis, draw),
+      html: renderPicksEmail(user, analysis, draw, strategy),
     }),
   });
 
@@ -80,7 +81,7 @@ export async function sendDrawSummaryEmail(
 
 // ── HTML Templates ────────────────────────────────────────────────────────────
 
-function renderPicksEmail(user: LotteryXUser, analysis: PatternAnalysis, drawName: string) {
+function renderPicksEmail(user: LotteryXUser, analysis: PatternAnalysis, drawName: string, strategy?: string) {
   return `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;background:#0f172a;padding:32px 16px">
       <div style="max-width:600px;margin:0 auto;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid rgba(99,102,241,0.3);border-radius:16px;overflow:hidden">
@@ -94,10 +95,11 @@ function renderPicksEmail(user: LotteryXUser, analysis: PatternAnalysis, drawNam
 
         <!-- Body -->
         <div style="padding:28px 32px">
-          <p style="margin:0 0 24px;color:#94a3b8;font-size:15px">Hola <strong style="color:#e2e8f0">${user.name}</strong>, aquí están los números recomendados por nuestro algoritmo para hoy:</p>
+          <p style="margin:0 0 24px;color:#94a3b8;font-size:15px">Hola <strong style="color:#e2e8f0">${user.name}</strong>, aqui estan tus 10 picks para <strong style="color:#e2e8f0">${drawName}</strong> con la estrategia <strong style="color:#e2e8f0">${strategy ?? user.favoriteStrategy ?? "jump"}</strong>:</p>
 
           ${renderPickGroup("⭐ Top 5 — Principales", analysis.topFive)}
           ${renderPickGroup("🔵 5 Backup", analysis.backups)}
+          ${renderTickets(analysis.generatedTickets)}
 
           <p style="margin:28px 0 0;padding:16px;background:rgba(99,102,241,0.1);border-left:3px solid #6366f1;border-radius:4px;color:#94a3b8;font-size:13px;line-height:1.6">
             Estos números siguen el patrón LotteryX: terminaciones que salen en 2do/3er premio y luego saltan al 1er premio.
@@ -180,6 +182,23 @@ function renderResultsEmail(
         <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.06);text-align:center">
           <p style="margin:0;color:#475569;font-size:12px">Para dejar de recibir estos correos, entra a tu perfil en LotteryX y desactiva las notificaciones.</p>
         </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTickets(tickets: string[]) {
+  if (!tickets || tickets.length === 0) {
+    return "";
+  }
+
+  return `
+    <div style="margin-bottom:24px">
+      <h2 style="margin:0 0 12px;font-size:14px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Billetes sugeridos</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${tickets.map(ticket => `
+          <div style="padding:12px 14px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.28);border-radius:10px;color:#34d399;font-size:20px;font-weight:800;font-family:monospace">${ticket}</div>
+        `).join("")}
       </div>
     </div>
   `;

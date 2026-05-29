@@ -37,7 +37,10 @@ export async function POST(request: Request) {
       name,
       email,
       password: hashedPassword,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      plan: "free",
+      subscriptionStatus: "free",
+      favoriteStrategy: "hot"
     });
 
     const token = await signToken(email);
@@ -47,4 +50,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Error al registrar" }, { status: 500 });
   }
 }
-

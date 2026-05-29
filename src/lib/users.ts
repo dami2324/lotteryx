@@ -1,4 +1,4 @@
-import type { Ticket, UserStats } from "./types";
+import type { PlanType, SubscriptionStatus, Ticket, UserStats } from "./types";
 
 export type LotteryXUser = {
   email: string;
@@ -13,6 +13,11 @@ export type LotteryXUser = {
   stats?: UserStats;
   generationHistory?: import("./types").GenerationRecord[];
   photo?: string;
+  plan?: PlanType;
+  subscriptionStatus?: SubscriptionStatus;
+  proUntil?: string;
+  payhipSubscriptionId?: string;
+  favoriteStrategy?: string;
 };
 
 const USERS_KEY = "lotteryx:users";
@@ -61,6 +66,17 @@ export async function saveUser(user: LotteryXUser) {
   if (user.photo !== undefined) {
     fields.push("photo", user.photo);
   }
+  fields.push("plan", user.plan ?? "free");
+  fields.push("subscriptionStatus", user.subscriptionStatus ?? "free");
+  if (user.proUntil) {
+    fields.push("proUntil", user.proUntil);
+  }
+  if (user.payhipSubscriptionId) {
+    fields.push("payhipSubscriptionId", user.payhipSubscriptionId);
+  }
+  if (user.favoriteStrategy) {
+    fields.push("favoriteStrategy", user.favoriteStrategy);
+  }
 
   await redisCommand(["HSET", userKey(email), ...fields]);
   
@@ -73,7 +89,8 @@ export async function getUser(email: string): Promise<LotteryXUser | null> {
   const data = await redisCommand<string[]>(["HMGET", userKey(safeEmail), 
     "email", "name", "createdAt", "password", 
     "drawPreference", "notificationEmail", "notificationPush", 
-    "favorites", "tickets", "stats", "generationHistory", "photo"
+    "favorites", "tickets", "stats", "generationHistory", "photo",
+    "plan", "subscriptionStatus", "proUntil", "payhipSubscriptionId", "favoriteStrategy"
   ]);
   
   if (!data[0]) return null;
@@ -110,7 +127,12 @@ export async function getUser(email: string): Promise<LotteryXUser | null> {
     tickets,
     stats,
     generationHistory,
-    photo: data[11] ?? undefined
+    photo: data[11] ?? undefined,
+    plan: data[12] === "pro" || isUserPro(data[13], data[14]) ? "pro" : "free",
+    subscriptionStatus: normalizeSubscriptionStatus(data[13], data[14]),
+    proUntil: data[14] ?? undefined,
+    payhipSubscriptionId: data[15] ?? undefined,
+    favoriteStrategy: data[16] ?? "jump"
   };
 }
 
@@ -150,4 +172,27 @@ async function redisCommand<T>(command: Array<string | number>) {
 
 function userKey(email: string) {
   return `lotteryx:user:${email}`;
+}
+
+export function isProUser(user: Pick<LotteryXUser, "plan" | "subscriptionStatus" | "proUntil">) {
+  return isUserPro(user.subscriptionStatus, user.proUntil) || user.plan === "pro";
+}
+
+function isUserPro(status?: string | null, proUntil?: string | null) {
+  if (status !== "active" && status !== "canceled") {
+    return false;
+  }
+
+  if (!proUntil) {
+    return status === "active";
+  }
+
+  return new Date(proUntil).getTime() > Date.now();
+}
+
+function normalizeSubscriptionStatus(status?: string | null, proUntil?: string | null): SubscriptionStatus {
+  if (isUserPro(status, proUntil)) {
+    return status === "canceled" ? "canceled" : "active";
+  }
+  return "free";
 }

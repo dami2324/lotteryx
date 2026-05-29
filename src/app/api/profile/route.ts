@@ -52,6 +52,7 @@ export async function POST(request: Request) {
     if (data.name !== undefined) user.name = data.name;
     if (data.photo !== undefined) user.photo = data.photo;
     if (data.generationHistory !== undefined) user.generationHistory = data.generationHistory;
+    if (data.favoriteStrategy !== undefined) user.favoriteStrategy = data.favoriteStrategy;
     
     if (data.password) {
       user.password = await hashPassword(data.password);

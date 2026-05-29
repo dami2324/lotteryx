@@ -8,6 +8,10 @@ type Profile = {
   name: string;
   email: string;
   token: string;
+  plan?: "free" | "pro";
+  subscriptionStatus?: "free" | "active" | "canceled" | "expired";
+  proUntil?: string;
+  favoriteStrategy?: string;
   drawPreference?: string;
   notificationEmail?: boolean;
   notificationPush?: boolean;
@@ -32,7 +36,11 @@ const STRATEGIES = [
   { id: "cold", label: "Fríos", icon: "❄️", desc: "Mayor ausencia reciente" },
   { id: "most_played", label: "Más Jugados", icon: "🏆", desc: "Más veces en 1er premio" },
   { id: "jump", label: "Patrón Brinco", icon: "🦘", desc: "Salto de 2do/3ro a 1ro" },
+  { id: "last_year", label: "Jugo el ano pasado", icon: "LY", desc: "Mismo sorteo del ano pasado" },
 ];
+
+const FREE_DRAWS = new Set<DrawType>(["Miercolito", "Dominical"]);
+const FREE_STRATEGIES = new Set(["hot", "cold"]);
 
 const TIME_RANGES = [
   { id: "30", label: "30 Días", icon: "📅" },
@@ -79,6 +87,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [statsTimeRange, setStatsTimeRange] = useState<string>("180");
   const [independentStats, setIndependentStats] = useState<any[]>([]);
   const [isStatsLoading, setIsStatsLoading] = useState(false);
+  const [officialHistory, setOfficialHistory] = useState<DrawRow[]>([]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(PROFILE_KEY);
@@ -120,9 +129,53 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     }
   }, [activeTab, statsDraw, statsTimeRange]);
 
+  useEffect(() => {
+    if (activeTab === "favorites" && officialHistory.length === 0) {
+      fetch("/api/history")
+        .then(res => res.json())
+        .then(data => Array.isArray(data) && setOfficialHistory(data))
+        .catch(console.error);
+    }
+  }, [activeTab, officialHistory.length]);
+
   const allPicks = useMemo(() => {
     return [...currentAnalysis.topFive, ...currentAnalysis.backups];
   }, [currentAnalysis]);
+
+  const isPro = useMemo(() => {
+    if (!profile) return false;
+    if (profile.plan === "pro") return true;
+    if ((profile.subscriptionStatus === "active" || profile.subscriptionStatus === "canceled") && profile.proUntil) {
+      return new Date(profile.proUntil).getTime() > Date.now();
+    }
+    return false;
+  }, [profile]);
+
+  const displayPicks = useMemo(() => {
+    if (isPro) {
+      return allPicks.map((pick) => ({ pick, locked: false }));
+    }
+
+    const lowScore = [...allPicks].sort((a, b) => a.score - b.score || a.term.localeCompare(b.term)).slice(0, 3);
+    const visible = new Set(lowScore.map((pick) => pick.term));
+    const lockedHighScore = [...allPicks]
+      .filter((pick) => !visible.has(pick.term))
+      .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term))
+      .slice(0, 7);
+
+    return [
+      ...lowScore.map((pick) => ({ pick, locked: false })),
+      ...lockedHighScore.map((pick) => ({ pick, locked: true }))
+    ];
+  }, [allPicks, isPro]);
+
+  const shareablePicks = useMemo(() => {
+    return isPro ? allPicks : displayPicks.filter((item) => !item.locked).map((item) => item.pick);
+  }, [allPicks, displayPicks, isPro]);
+
+  const availableDraws = useMemo(() => {
+    return isPro ? DRAWS : DRAWS.filter((draw) => FREE_DRAWS.has(draw.id));
+  }, [isPro]);
 
   async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -171,6 +224,10 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         tickets: data.tickets || [],
         stats: data.stats || { totalTickets: 0, totalWins: 0, totalMatchedDigits: 0 },
         generationHistory: data.generationHistory || [],
+        plan: data.plan || "free",
+        subscriptionStatus: data.subscriptionStatus || "free",
+        proUntil: data.proUntil,
+        favoriteStrategy: data.favoriteStrategy || "hot",
         notificationEmail: data.notificationEmail,
         notificationPush: data.notificationPush
       };
@@ -287,6 +344,12 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     }
   }
 
+  function handleUpgrade() {
+    if (!profile) return;
+    const url = `https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`;
+    window.location.href = url;
+  }
+
   const addTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile || !ticketDate || !ticketNumber || !ticketDraw) return;
@@ -345,6 +408,9 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     const selectedStrategy = strategyOverride || wizardStrategy;
     const selectedTimeRange = "180";
     if (!selectedStrategy || !wizardDraw) return;
+    if (!isPro && (!FREE_DRAWS.has(wizardDraw) || !FREE_STRATEGIES.has(selectedStrategy))) {
+      return;
+    }
     setIsRefreshing(true);
     try {
       const res = await fetch(`/api/picks?strategy=${selectedStrategy}&timeRange=${selectedTimeRange}&draw=${wizardDraw}`);
@@ -354,19 +420,33 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         setHasGenerated(true);
 
         if (profile) {
+          const generatedPicks = [...data.topFive, ...data.backups].map((p: Pick) => p.term);
           const newGen = {
             draw: wizardDraw,
             strategy: selectedStrategy,
             timeRange: selectedTimeRange,
-            picks: data.topFive.map((p: Pick) => p.term)
+            picks: generatedPicks,
+            tickets: data.generatedTickets || []
           };
+          const optimisticHistory = [
+            ...(profile.generationHistory || []),
+            {
+              id: crypto.randomUUID(),
+              date: new Date().toISOString(),
+              ...newGen
+            }
+          ].slice(-20);
+          const optimisticProfile = { ...profile, generationHistory: optimisticHistory, favoriteStrategy: selectedStrategy };
+          setProfile(optimisticProfile);
+          window.localStorage.setItem(PROFILE_KEY, JSON.stringify(optimisticProfile));
+
           const profileRes = await fetch("/api/profile", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${profile.token}`
             },
-            body: JSON.stringify({ newGeneration: newGen })
+            body: JSON.stringify({ newGeneration: newGen, favoriteStrategy: selectedStrategy })
           });
           if (profileRes.ok) {
             const profileData = await profileRes.json();
@@ -388,7 +468,8 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
   const shareResults = async () => {
     const text = `Mis números recomendados para la lotería (${wizardDraw}):\n` +
-      allPicks.map(p => `• ${p.term} (Score: ${p.score})`).join("\n") +
+      shareablePicks.map(p => `• ${p.term} (Score: ${p.score})`).join("\n") +
+      (isPro ? `\n\nBilletes sugeridos:\n${(currentAnalysis.generatedTickets || []).map(t => `• ${t}`).join("\n")}` : "") +
       `\n\n¡Generado con LotteryX!`;
     
     if (navigator.share) {
@@ -407,7 +488,8 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
   const downloadResults = () => {
     const text = `Mis números recomendados para la lotería (${wizardDraw}):\n\n` +
-      allPicks.map(p => `• ${p.term} (Score: ${p.score}) - ${p.reason}`).join("\n\n") +
+      shareablePicks.map(p => `• ${p.term} (Score: ${p.score}) - ${p.reason}`).join("\n\n") +
+      (isPro ? `\n\nBilletes sugeridos:\n${(currentAnalysis.generatedTickets || []).map(t => `• ${t}`).join("\n")}` : "") +
       `\n\nGenerado el: ${new Date().toLocaleString()}\n¡Con LotteryX!`;
     
     const blob = new Blob([text], { type: "text/plain" });
@@ -470,7 +552,11 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   }
 
   const userFavs = profile.favorites || [];
-  const favoritePicks = allPicks.filter(p => userFavs.includes(p.term));
+  const favoriteRows = userFavs.map((term) => {
+    const pick = allPicks.find(p => p.term === term);
+    const hits = officialHistory.filter(row => row.firstTerm === term || row.secondTerm === term || row.thirdTerm === term);
+    return { term, pick, hits };
+  });
   const userTickets = profile.tickets || [];
   const stats = profile.stats || { totalTickets: 0, totalWins: 0, totalMatchedDigits: 0 };
 
@@ -487,6 +573,13 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           <p className="brand">LotteryX</p>
           <h2 className="greeting">Hola, {profile.name} 👋</h2>
         </div>
+        {isPro ? (
+          <div className="plan-pill pro">Pro activo</div>
+        ) : (
+          <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy">
+            🚀 Desbloquear Pro
+          </a>
+        )}
       </header>
 
       {/* PILL TABS */}
@@ -531,7 +624,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                     <h2 className="wizard-title">Escoge tu Sorteo</h2>
                     <p className="wizard-subtitle">¿En cuál sorteo vas a jugar?</p>
                     <div className="icon-grid">
-                      {DRAWS.map(d => (
+                      {availableDraws.map(d => (
                         <button
                           key={d.id}
                           className={`icon-card ${wizardDraw === d.id ? "selected" : ""}`}
@@ -552,11 +645,17 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                     <h2 className="wizard-title">Elige tu Estrategia</h2>
                     <p className="wizard-subtitle">¿Cómo quieres que calculemos tus números?</p>
                     <div className="icon-grid">
-                      {STRATEGIES.map(s => (
+                      {STRATEGIES.map(s => {
+                        const locked = !isPro && !FREE_STRATEGIES.has(s.id);
+                        return (
                         <button
                           key={s.id}
-                          className={`icon-card ${wizardStrategy === s.id ? "selected" : ""}`}
+                          className={`icon-card ${wizardStrategy === s.id ? "selected" : ""} ${locked ? "locked-option" : ""}`}
                           onClick={() => {
+                            if (locked) {
+                              handleUpgrade();
+                              return;
+                            }
                             setWizardStrategy(s.id);
                             setWizardTimeRange("180");
                             handleGenerate(s.id);
@@ -565,8 +664,9 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                           <span className="icon-card-emoji">{s.icon}</span>
                           <span className="icon-card-label">{s.label}</span>
                           <span className="icon-card-desc">{s.desc}</span>
+                          {locked && <span className="lock-chip">🔒 Pro</span>}
                         </button>
-                      ))}
+                      )})}
                     </div>
                     <button className="wizard-back" onClick={() => setWizardStep(1)}>← Volver</button>
                   </div>
@@ -617,6 +717,20 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   {DRAWS.find(d => d.id === wizardDraw)?.icon} {wizardDraw} • {STRATEGIES.find(s => s.id === wizardStrategy)?.icon} {STRATEGIES.find(s => s.id === wizardStrategy)?.label} • {wizardTimeRange} días
                 </p>
 
+                {wizardStrategy === "last_year" && currentAnalysis.lastYearDraw && (
+                  <section className="last-year-panel">
+                    <div>
+                      <span className="panel-kicker">Sorteo del ano pasado</span>
+                      <h3>{currentAnalysis.lastYearDraw.date} - {currentAnalysis.lastYearDraw.draw}</h3>
+                    </div>
+                    <div className="last-year-prizes">
+                      <div><span>1ro</span><strong>{currentAnalysis.lastYearDraw.first}</strong></div>
+                      <div><span>2do</span><strong>{currentAnalysis.lastYearDraw.second}</strong></div>
+                      <div><span>3ro</span><strong>{currentAnalysis.lastYearDraw.third}</strong></div>
+                    </div>
+                  </section>
+                )}
+
                 <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem", justifyContent: "center" }}>
                   <button onClick={shareResults} style={{ padding: "0.5rem 1rem", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: "bold" }}>
                     📤 Compartir
@@ -627,25 +741,51 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                 </div>
 
                 <div className="results-grid">
-                  {allPicks.map((pick, i) => {
+                  {displayPicks.map(({ pick, locked }, i) => {
                     const isFav = userFavs.includes(pick.term);
                     return (
-                      <div key={pick.term} className="result-card fade-in" style={{ animationDelay: `${i * 0.06}s` }}>
-                        <div className="result-card-top">
-                          <span className="result-number">{pick.term}</span>
-                          <button className={`fav-btn ${isFav ? "active" : ""}`} onClick={() => toggleFavorite(pick.term)}>
-                            {isFav ? "★" : "☆"}
-                          </button>
+                      <div key={`${pick.term}-${i}`} className={`result-card fade-in ${locked ? "locked-result" : ""}`} style={{ animationDelay: `${i * 0.06}s` }}>
+                        {locked && <div className="result-lock">🔒</div>}
+                        <div className={locked ? "blurred-result" : ""}>
+                          <div className="result-card-top">
+                            <span className="result-number">{pick.term}</span>
+                            <button className={`fav-btn ${isFav ? "active" : ""}`} onClick={() => !locked && toggleFavorite(pick.term)} disabled={locked}>
+                              {isFav ? "★" : "☆"}
+                            </button>
+                          </div>
+                          <div className="result-score">
+                            <span className="score-badge">Score {pick.score}</span>
+                            {pick.recentSignal && <span className="hot-badge">HOT</span>}
+                          </div>
+                          <p className="result-reason">{pick.reason}</p>
                         </div>
-                        <div className="result-score">
-                          <span className="score-badge">Score {pick.score}</span>
-                          {pick.recentSignal && <span className="hot-badge">HOT</span>}
-                        </div>
-                        <p className="result-reason">{pick.reason}</p>
                       </div>
                     );
                   })}
                 </div>
+
+                {!isPro && (
+                  <div style={{ textAlign: "center", margin: "30px 0" }}>
+                    <p style={{ color: "var(--text-muted)", marginBottom: "16px", fontSize: "15px" }}>Los 7 números con mayor puntuación están en el plan Pro</p>
+                    <a href={`https://payhip.com/b/ih1Cy?email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "16px 32px", fontSize: "16px" }}>
+                      🌟 Actualizar Ahora
+                    </a>
+                  </div>
+                )}
+
+                {isPro && (currentAnalysis.generatedTickets || []).length > 0 && (
+                  <section className="ticket-suggestions">
+                    <div>
+                      <span className="panel-kicker">Billetes sugeridos</span>
+                      <h3>5 jugadas de 4 numeros</h3>
+                    </div>
+                    <div className="ticket-suggestion-grid">
+                      {(currentAnalysis.generatedTickets || []).map((ticket) => (
+                        <span key={ticket}>{ticket}</span>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
             )}
           </div>
@@ -660,7 +800,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                 <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 }}>
                   <span style={{ fontSize: "0.9em", opacity: 0.8 }}>Sorteo</span>
                   <select value={statsDraw} onChange={e => setStatsDraw(e.target.value as DrawType)} style={{ padding: "0.5rem", borderRadius: "8px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "inherit" }}>
-                    {DRAWS.map(d => <option key={d.id} value={d.id} style={{ color: "#000" }}>{d.label}</option>)}
+                    {availableDraws.map(d => <option key={d.id} value={d.id} style={{ color: "#000" }}>{d.label}</option>)}
                   </select>
                 </label>
                 <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 }}>
@@ -711,20 +851,30 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         {activeTab === "favorites" && (
           <div className="fade-in">
             <h2 style={{ marginBottom: "1.5rem" }}>Mis Favoritos</h2>
-            {favoritePicks.length === 0 ? (
+            {!isPro && (
+              <button className="upgrade-banner" onClick={handleUpgrade}>
+                Favoritos con historial de aciertos estan disponibles en Pro → Actualizar
+              </button>
+            )}
+            {favoriteRows.length === 0 ? (
               <p className="wizard-subtitle">No has guardado ningún número todavía. Genera números y toca la ☆ para guardarlos.</p>
             ) : (
               <div className="results-grid">
-                {favoritePicks.map((pick, i) => (
-                  <div key={pick.term} className="result-card fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
+                {favoriteRows.map((favorite, i) => (
+                  <div key={favorite.term} className="result-card fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
                     <div className="result-card-top">
-                      <span className="result-number">{pick.term}</span>
-                      <button className="fav-btn active" onClick={() => toggleFavorite(pick.term)}>★</button>
+                      <span className="result-number">{favorite.term}</span>
+                      <button className="fav-btn active" onClick={() => toggleFavorite(favorite.term)}>★</button>
                     </div>
                     <div className="result-score">
-                      <span className="score-badge">Score {pick.score}</span>
+                      {favorite.pick && <span className="score-badge">Score {favorite.pick.score}</span>}
+                      {isPro && <span className="hot-badge">{favorite.hits.length} aciertos</span>}
                     </div>
-                    <p className="result-reason">{pick.reason}</p>
+                    <p className="result-reason">
+                      {isPro && favorite.hits.length > 0
+                        ? `Ultimo acierto: ${favorite.hits.at(-1)?.date} en ${favorite.hits.at(-1)?.draw}.`
+                        : favorite.pick?.reason || "Favorito guardado."}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -881,13 +1031,23 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                 <div key={i} className="ticket-item" style={{ flexDirection: "column", alignItems: "flex-start", gap: "0.5rem" }}>
                   <div className="info" style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
                     <strong>{new Date(g.date).toLocaleDateString()} - {g.draw}</strong>
-                    <span style={{ fontSize: "0.85em", opacity: 0.8 }}>{g.timeRange} días | Estrategia: {g.strategy}</span>
+                    <span style={{ fontSize: "0.85em", opacity: 0.8 }}>
+                      {g.timeRange} días | Estrategia: {STRATEGIES.find(s => s.id === g.strategy)?.label || g.strategy}
+                    </span>
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     {g.picks.map(p => (
                       <span key={p} style={{ background: "rgba(255,255,255,0.1)", padding: "2px 8px", borderRadius: "12px", fontSize: "0.9em" }}>{p}</span>
                     ))}
                   </div>
+                  {g.tickets && g.tickets.length > 0 && (
+                    <div className="history-ticket-row">
+                      <span>Billetes:</span>
+                      {g.tickets.map(t => (
+                        <strong key={t}>{t}</strong>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               {(!profile.generationHistory || profile.generationHistory.length === 0) && (

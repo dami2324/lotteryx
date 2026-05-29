@@ -3,7 +3,7 @@ import path from "node:path";
 
 export type DrawName = "Miercolito" | "Dominical" | "Gordito" | "Extraordinaria";
 
-export type StrategyType = "hot" | "cold" | "most_played" | "jump";
+export type StrategyType = "hot" | "cold" | "most_played" | "jump" | "last_year";
 export type TimeRange = 30 | 60 | 90 | 180;
 
 export type DrawRow = {
@@ -43,6 +43,8 @@ export type PatternAnalysis = {
   };
   topFive: Pick[];
   backups: Pick[];
+  generatedTickets: string[];
+  lastYearDraw: DrawRow | null;
   watchlist: Array<{
     term: string;
     origin: string;
@@ -201,6 +203,8 @@ export async function getPatternAnalysis(
 
   const statValues = Object.values(stats);
 
+  const lastYearDraw = findLastYearDraw(allRows, drawFilter);
+
   if (strategy === "jump") {
     picks = statValues
       .filter((item) => item.exposures > 0)
@@ -225,6 +229,32 @@ export async function getPatternAnalysis(
           lastLowerSeen: item.lastLowerSeen || "Sin registro reciente",
           recentSignal,
           reason: getReason(recentSignal, item)
+        };
+      })
+      .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
+  } else if (strategy === "last_year") {
+    const lastYearTerms = new Set(
+      lastYearDraw ? [lastYearDraw.firstTerm, lastYearDraw.secondTerm, lastYearDraw.thirdTerm] : []
+    );
+
+    picks = statValues
+      .map((item) => {
+        const fromLastYear = lastYearTerms.has(item.term);
+        const total = item.firstCount + item.secondCount + item.thirdCount;
+        const lowerSignal = item.exposures / maxExposures;
+        const firstSignal = item.firstCount / Math.max(1, ...statValues.map((stat) => stat.firstCount));
+        const score = roundScore(100 * ((fromLastYear ? 0.55 : 0) + 0.25 * lowerSignal + 0.2 * firstSignal));
+
+        return {
+          ...item,
+          score,
+          averageJumpDelay:
+            item.jumpDelays.length > 0 ? roundScore(item.jumpDelays.reduce((a, b) => a + b, 0) / item.jumpDelays.length) : null,
+          lastLowerSeen: item.lastLowerSeen || "Sin registro",
+          recentSignal: fromLastYear,
+          reason: fromLastYear
+            ? "Jugo el ano pasado en este sorteo."
+            : `Apoya el patron anual con ${total} apariciones en el historial.`
         };
       })
       .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
@@ -286,12 +316,15 @@ export async function getPatternAnalysis(
   }));
 
   const topTen = completeTopTen(picks, statValues);
+  const generatedTickets = buildTickets(topTen, rows, strategy, lastYearDraw);
 
   return {
     generatedAt: getPanamaNow().toISOString(),
     nextDraw: getNextDraw(),
     topFive: topTen.slice(0, 5),
     backups: topTen.slice(5, 10),
+    generatedTickets,
+    lastYearDraw,
     watchlist,
     latestDraws,
     totalDraws: rows.length,
@@ -604,6 +637,41 @@ function getNextDraw() {
   };
 }
 
+function findLastYearDraw(rows: DrawRow[], drawFilter?: DrawName) {
+  const filteredRows = drawFilter ? rows.filter((row) => row.draw === drawFilter) : rows;
+  if (filteredRows.length === 0) {
+    return null;
+  }
+
+  const target = drawFilter === "Miercolito" || drawFilter === "Dominical"
+    ? getNextDateForDraw(drawFilter)
+    : new Date(`${filteredRows.at(-1)?.date ?? HISTORY_START}T00:00:00.000Z`);
+  const lastYearTarget = new Date(Date.UTC(target.getUTCFullYear() - 1, target.getUTCMonth(), target.getUTCDate()));
+
+  return filteredRows
+    .map((row) => ({
+      row,
+      distance: Math.abs(new Date(`${row.date}T00:00:00.000Z`).getTime() - lastYearTarget.getTime())
+    }))
+    .sort((a, b) => a.distance - b.distance)[0]?.row ?? null;
+}
+
+function getNextDateForDraw(draw: DrawName) {
+  const now = getPanamaNow();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const weekday = draw === "Miercolito" ? 3 : draw === "Dominical" ? 0 : today.getUTCDay();
+
+  for (let offset = 0; offset <= 14; offset += 1) {
+    const candidate = new Date(today);
+    candidate.setUTCDate(today.getUTCDate() + offset);
+    if (candidate.getUTCDay() === weekday) {
+      return candidate;
+    }
+  }
+
+  return today;
+}
+
 function getPanamaNow() {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: PANAMA_TIMEZONE,
@@ -693,4 +761,37 @@ function completeTopTen(picks: Pick[], statValues: MutableStats[]): Pick[] {
     .sort((a, b) => b.score - a.score || a.term.localeCompare(b.term));
 
   return [...picks, ...fallback].slice(0, 10);
+}
+
+function buildTickets(picks: Pick[], rows: DrawRow[], strategy: StrategyType, lastYearDraw: DrawRow | null) {
+  const sourceNumbers = rows
+    .flatMap((row) => [row.first, row.second, row.third])
+    .filter((number) => /^\d{4,5}$/.test(number));
+  const preferredNumbers = strategy === "last_year" && lastYearDraw
+    ? [lastYearDraw.first, lastYearDraw.second, lastYearDraw.third, ...sourceNumbers]
+    : sourceNumbers;
+  const tickets: string[] = [];
+
+  for (const pick of picks) {
+    const base = preferredNumbers.find((number) => toTerm(number) === pick.term);
+    const prefix = base ? base.slice(0, -2).slice(-2).padStart(2, "0") : deriveTicketPrefix(pick);
+    const ticket = `${prefix}${pick.term}`.slice(-4).padStart(4, "0");
+
+    if (!tickets.includes(ticket)) {
+      tickets.push(ticket);
+    }
+
+    if (tickets.length === 5) {
+      break;
+    }
+  }
+
+  return tickets;
+}
+
+function deriveTicketPrefix(pick: Pick) {
+  const seed = pick.term
+    .split("")
+    .reduce((sum, digit) => sum + Number(digit), 0) + pick.exposures + pick.firstCount + pick.secondCount + pick.thirdCount;
+  return ((seed * 7) % 100).toString().padStart(2, "0");
 }
