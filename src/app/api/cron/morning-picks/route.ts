@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sendPicksEmail } from "@/lib/email";
+import { sendMorningReminderEmail } from "@/lib/email";
 import { getPatternAnalysis, getHistory, StrategyType, DrawName } from "@/lib/lottery";
 import { getUsers, isProUser } from "@/lib/users";
 
@@ -57,8 +57,7 @@ export async function GET(request: Request) {
           if (strategy === "last_year") {
             return { sent: false, reason: "Estrategia last_year no envía correos de generación" };
           }
-          const analysis = await getPatternAnalysis(strategy, 180, false, drawName);
-          return sendPicksEmail(user, analysis, drawName, strategy);
+          return sendMorningReminderEmail(user, drawName);
         })
       );
       results[drawName] = emailResults.filter(r => r.sent).length;

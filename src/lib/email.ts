@@ -5,17 +5,13 @@ import type { Ticket } from "./types";
 const resendApiKey = process.env.RESEND_API_KEY;
 const emailFrom = process.env.EMAIL_FROM ?? "LotteryX <onboarding@resend.dev>";
 
-// ── sendPicksEmail ────────────────────────────────────────────────────────────
-export async function sendPicksEmail(
+// ── sendMorningReminderEmail ────────────────────────────────────────────────────────────
+export async function sendMorningReminderEmail(
   user: LotteryXUser,
-  analysis: PatternAnalysis,
-  drawName?: string,
-  strategy?: string
+  drawName: string
 ) {
   if (!resendApiKey) return { sent: false, reason: "RESEND_API_KEY no configurado" };
   if (user.notificationEmail === false) return { sent: false, reason: "Notificaciones desactivadas" };
-
-  const draw = drawName ?? analysis.nextDraw.name;
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -26,8 +22,8 @@ export async function sendPicksEmail(
     body: JSON.stringify({
       from: emailFrom,
       to: user.email,
-      subject: `🍀 LotteryX: Tus números para el sorteo de hoy — ${draw}`,
-      html: renderPicksEmail(user, analysis, draw, strategy),
+      subject: `⏰ LotteryX: Hoy juega el ${drawName} — ¡Solicita tus recomendaciones!`,
+      html: renderMorningReminderEmail(user, drawName),
     }),
   });
 
@@ -81,7 +77,7 @@ export async function sendDrawSummaryEmail(
 
 // ── HTML Templates ────────────────────────────────────────────────────────────
 
-function renderPicksEmail(user: LotteryXUser, analysis: PatternAnalysis, drawName: string, strategy?: string) {
+function renderMorningReminderEmail(user: LotteryXUser, drawName: string) {
   return `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;background:#0f172a;padding:32px 16px">
       <div style="max-width:600px;margin:0 auto;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid rgba(99,102,241,0.3);border-radius:16px;overflow:hidden">
@@ -89,32 +85,20 @@ function renderPicksEmail(user: LotteryXUser, analysis: PatternAnalysis, drawNam
         <!-- Header -->
         <div style="background:linear-gradient(135deg,#6366f1,#a855f7);padding:28px 32px;text-align:center">
           <p style="margin:0 0 6px;font-size:13px;letter-spacing:3px;color:rgba(255,255,255,0.7);text-transform:uppercase">LotteryX</p>
-          <h1 style="margin:0;font-size:28px;color:#fff;font-weight:800">🍀 Tus números del día</h1>
-          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:15px">${drawName} &nbsp;·&nbsp; ${new Date().toLocaleDateString("es-PA", { weekday:"long", day:"numeric", month:"long" })}</p>
+          <h1 style="margin:0;font-size:28px;color:#fff;font-weight:800">⏰ Hoy juega el ${drawName}</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:15px">${new Date().toLocaleDateString("es-PA", { weekday:"long", day:"numeric", month:"long" })}</p>
         </div>
 
         <!-- Body -->
-        <div style="padding:28px 32px">
-          <p style="margin:0 0 24px;color:#94a3b8;font-size:15px">Hola <strong style="color:#e2e8f0">${user.name}</strong>, aqui estan tus resultados para <strong style="color:#e2e8f0">${drawName}</strong> con la estrategia <strong style="color:#e2e8f0">${strategy === "last_year" ? "Jugó el año pasado" : (strategy ?? user.favoriteStrategy ?? "jump")}</strong>:</p>
+        <div style="padding:28px 32px;text-align:center">
+          <p style="margin:0 0 24px;color:#94a3b8;font-size:16px;line-height:1.6">Hola <strong style="color:#e2e8f0">${user.name}</strong>, te recordamos que hoy se realizará el sorteo del <strong>${drawName}</strong>.</p>
+          <p style="margin:0 0 32px;color:#94a3b8;font-size:16px;line-height:1.6">Aún estás a tiempo. Ingresa a la aplicación para solicitar tus recomendaciones generadas mediante nuestro modelo estadístico antes de que cierre el sorteo.</p>
 
-          ${strategy === "last_year" && analysis.lastYearDraw ? `
-            <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:20px;margin-bottom:24px;border-left:4px solid #6366f1">
-              <h2 style="margin:0 0 16px;font-size:16px;color:#e2e8f0;text-transform:uppercase;letter-spacing:1px">📅 Sorteo del año pasado</h2>
-              <p style="margin:0 0 16px;font-size:14px;color:#94a3b8">${analysis.lastYearDraw.date} - ${analysis.lastYearDraw.draw}</p>
-              ${renderPrizeRow("🥇 1er Premio", analysis.lastYearDraw.first, analysis.lastYearDraw.firstTerm)}
-              ${renderPrizeRow("🥈 2do Premio", analysis.lastYearDraw.second, analysis.lastYearDraw.secondTerm)}
-              ${renderPrizeRow("🥉 3er Premio", analysis.lastYearDraw.third, analysis.lastYearDraw.thirdTerm)}
-            </div>
-          ` : `
-            ${renderPickGroup("⭐ Top 5 — Principales", analysis.topFive)}
-            ${renderPickGroup("🔵 5 Backup", analysis.backups)}
-            ${renderTickets(analysis.generatedTickets)}
+          <a href="https://lotteryx.app" style="display:inline-block;padding:16px 32px;background:#6366f1;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;letter-spacing:0.5px">Ver mis recomendaciones en la App</a>
 
-            <p style="margin:28px 0 0;padding:16px;background:rgba(99,102,241,0.1);border-left:3px solid #6366f1;border-radius:4px;color:#94a3b8;font-size:13px;line-height:1.6">
-              Estos números siguen el patrón LotteryX o tu estrategia elegida.
-              Es un análisis estadístico, no una garantía.
-            </p>
-          `}
+          <p style="margin:32px 0 0;padding:16px;background:rgba(99,102,241,0.1);border-left:3px solid #6366f1;border-radius:4px;color:#94a3b8;font-size:13px;line-height:1.6;text-align:left">
+            Recibirás otro correo en la tarde con los resultados oficiales y te avisaremos si las combinaciones generadas en la app resultaron ganadoras.
+          </p>
         </div>
 
         <!-- Footer -->
