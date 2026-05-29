@@ -54,6 +54,9 @@ export async function GET(request: Request) {
       const emailResults = await Promise.all(
         proUsers.map(async user => {
           const strategy = (user.favoriteStrategy || "jump") as StrategyType;
+          if (strategy === "last_year") {
+            return { sent: false, reason: "Estrategia last_year no envía correos" };
+          }
           return sendMorningReminderEmail(user, drawName);
         })
       );
