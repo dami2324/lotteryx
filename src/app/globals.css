@@ -42,7 +42,118 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ========== LAYOUT ========== */
+
+/* ========== DASHBOARD LAYOUT ========== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(10, 10, 14, 0.85);
+  border-right: 1px solid var(--glass-border);
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  gap: 0;
+}
+
+.app-main {
+  flex: 1;
+  padding: 40px 32px 60px;
+  max-width: 860px;
+  min-width: 0;
+}
+
+/* ── Sidebar header (brand + user info) ──────────────────── */
+.sidebar-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 8px;
+}
+.sidebar-header .brand {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin: 0 0 6px 0;
+  -webkit-text-fill-color: unset;
+  background: none;
+}
+.sidebar-header .greeting {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 12px 0;
+}
+
+/* ── Sidebar nav ──────────────────────────────────────────── */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-section {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 16px 12px 6px;
+  margin: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+  width: 100%;
+  line-height: 1.4;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: #e2e8f0;
+}
+.nav-item.active {
+  background: rgba(99,102,241,0.12);
+  border-color: rgba(99,102,241,0.25);
+  color: #a5b4fc;
+  font-weight: 600;
+}
+.nav-item span:first-child {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+/* ── Mobile ───────────────────────────────────────────────── */
+.mobile-menu-btn {
+  display: none;
+}
+
+/* ── Keep .shell for auth screens ──────────────────────────── */
 .shell {
   width: min(960px, 92%);
   margin: 0 auto;
@@ -1158,3 +1269,39 @@ body {
     font-size: 2rem;
   }
 }
+
+/* ========== RESPONSIVE SIDEBAR ========== */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .sidebar-section {
+    width: 100%;
+    padding: 8px 4px 2px;
+  }
+  .nav-item {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    flex: 0 0 auto;
+  }
+  .app-main {
+    padding: 20px 16px 40px;
+  }
+  .mobile-menu-btn {
+    display: none;
+  }
+}
+
