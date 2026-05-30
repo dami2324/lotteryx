@@ -67,7 +67,8 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [currentAnalysis, setCurrentAnalysis] = useState<PatternAnalysis>(analysis);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<"wizard" | "stats" | "favorites" | "tickets" | "profile">("wizard");
+  const [activeTab, setActiveTab] = useState<"wizard" | "stats" | "favorites" | "tickets" | "profile" | "history" | "dreams" | "pyramids" | "alerts">("wizard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Wizard step state
@@ -568,48 +569,66 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
   // ---------- MAIN APP ----------
   return (
-    <main className="shell">
-      <header className="app-header">
-        <div>
+    <div className="app-layout">
+      {/* ===== SIDEBAR ===== */}
+      <aside className={`app-sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
+        <div className="sidebar-header">
           <p className="brand">LotteryX</p>
-          <h2 className="greeting">Hola, {profile.name} 👋</h2>
+          <h2 className="greeting">Hola, {profile.name.split(" ")[0]} 👋</h2>
+          {isPro ? (
+            <div className="plan-pill pro" style={{ width: "fit-content" }}>Pro activo</div>
+          ) : (
+            <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "8px 12px", fontSize: "0.85rem" }}>
+              🚀 Desbloquear Pro
+            </a>
+          )}
         </div>
-        {isPro ? (
-          <div className="plan-pill pro">Pro activo</div>
-        ) : (
-          <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy">
-            🚀 Desbloquear Pro
-          </a>
-        )}
-      </header>
-
-      {/* PILL TABS */}
-      <nav className="pill-tabs">
-        {([
-          { id: "wizard" as const, icon: "🎯", label: "Sorteo" },
-          { id: "stats" as const, icon: "📊", label: "Estadísticas" },
-          { id: "favorites" as const, icon: "⭐", label: "Favoritos" },
-          { id: "tickets" as const, icon: "☑️", label: "Verificar" },
-          { id: "profile" as const, icon: "👤", label: "Perfil" },
-        ]).map(tab => (
-          <button
-            key={tab.id}
-            className={`pill-btn ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => {
-              if ((tab.id === "stats" || tab.id === "favorites") && !isPro) {
-                setShowPricingModal(true);
-              } else {
-                setActiveTab(tab.id);
-              }
-            }}
-          >
-            <span className="pill-icon">{tab.icon}</span>
-            <span className="pill-label">{tab.label}</span>
+        <nav className="sidebar-nav">
+          <div className="sidebar-section">SORTEOS</div>
+          <button className={`nav-item ${activeTab === "wizard" ? "active" : ""}`} onClick={() => { setActiveTab("wizard"); setMobileMenuOpen(false); }}>
+            <span>🏠</span> Inicio
           </button>
-        ))}
-      </nav>
+          <button className={`nav-item ${activeTab === "history" ? "active" : ""}`} onClick={() => { setActiveTab("history"); setMobileMenuOpen(false); }}>
+            <span>📋</span> Todos los sorteos
+          </button>
+          <div className="sidebar-section">HERRAMIENTAS</div>
+          <button className={`nav-item ${activeTab === "pyramids" ? "active" : ""}`} onClick={() => { setActiveTab("pyramids"); setMobileMenuOpen(false); }}>
+            <span>🔺</span> Pirámides (Próx)
+          </button>
+          <button className={`nav-item ${activeTab === "stats" ? "active" : ""}`} onClick={() => {
+            if (!isPro) { setShowPricingModal(true); return; }
+            setActiveTab("stats"); setMobileMenuOpen(false);
+          }}>
+            <span>📊</span> Estadísticas
+          </button>
+          <button className={`nav-item ${activeTab === "tickets" ? "active" : ""}`} onClick={() => { setActiveTab("tickets"); setMobileMenuOpen(false); }}>
+            <span>🎟️</span> Verificar billete
+          </button>
+          <button className={`nav-item ${activeTab === "dreams" ? "active" : ""}`} onClick={() => { setActiveTab("dreams"); setMobileMenuOpen(false); }}>
+            <span>🌙</span> Diccionario sueños
+          </button>
+          <div className="sidebar-section">CUENTA</div>
+          <button className={`nav-item ${activeTab === "favorites" ? "active" : ""}`} onClick={() => {
+            if (!isPro) { setShowPricingModal(true); return; }
+            setActiveTab("favorites"); setMobileMenuOpen(false);
+          }}>
+            <span>⭐</span> Favoritos
+          </button>
+          <button className={`nav-item ${activeTab === "alerts" ? "active" : ""}`} onClick={() => { setActiveTab("alerts"); setMobileMenuOpen(false); }}>
+            <span>🔔</span> Alertas (Próx)
+          </button>
+          <button className={`nav-item ${activeTab === "profile" ? "active" : ""}`} onClick={() => { setActiveTab("profile"); setMobileMenuOpen(false); }}>
+            <span>⚙️</span> Configuración
+          </button>
+        </nav>
+      </aside>
 
-      <div className="tab-content">
+      {/* ===== MAIN CONTENT ===== */}
+      <main className="app-main">
+        <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? "✖ Cerrar Menú" : "☰ Menú"}
+        </button>
+        <div className="tab-content">
         {/* ========== WIZARD TAB ========== */}
         {activeTab === "wizard" && (
           <div className="fade-in">
@@ -1096,7 +1115,33 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
             </button>
           </div>
         )}
-      </div>
+
+        {/* ===== PLACEHOLDER PANELS ===== */}
+        {activeTab === "history" && (
+          <div className="fade-in glass-panel" style={{ textAlign: "center", padding: "60px 20px" }}>
+            <h2>📋 Todos los sorteos</h2>
+            <p style={{ color: "var(--text-muted)", marginTop: "16px" }}>El historial completo de sorteos oficiales estará disponible aquí próximamente.</p>
+          </div>
+        )}
+        {activeTab === "pyramids" && (
+          <div className="fade-in glass-panel" style={{ textAlign: "center", padding: "60px 20px" }}>
+            <h2>🔺 Pirámides</h2>
+            <p style={{ color: "var(--text-muted)", marginTop: "16px" }}>La herramienta de cálculo de pirámides estará disponible próximamente.</p>
+          </div>
+        )}
+        {activeTab === "dreams" && (
+          <div className="fade-in glass-panel" style={{ textAlign: "center", padding: "60px 20px" }}>
+            <h2>🌙 Diccionario de sueños</h2>
+            <p style={{ color: "var(--text-muted)", marginTop: "16px" }}>Busca el significado de tus sueños y descubre qué número jugar. (Próximamente)</p>
+          </div>
+        )}
+        {activeTab === "alerts" && (
+          <div className="fade-in glass-panel" style={{ textAlign: "center", padding: "60px 20px" }}>
+            <h2>🔔 Configuración de Alertas</h2>
+            <p style={{ color: "var(--text-muted)", marginTop: "16px" }}>Personaliza qué notificaciones deseas recibir en tu correo. (Próximamente)</p>
+          </div>
+        )}
+      </div>{/* end tab-content */}
 
       {/* ========== PRICING MODAL ========== */}
       {showPricingModal && (
@@ -1128,21 +1173,15 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   <li>⭐ Alertas de Resultados del Sorteo</li>
                   <li>⭐ Generador y Rastreador de Billetes</li>
                 </ul>
-                <button 
-                  className="premium-upgrade-btn" 
-                  style={{ width: "100%", marginTop: "auto", padding: "16px", border: "none", cursor: "pointer" }}
-                  onClick={() => {
-                    const btn = document.querySelector('.app-header .payhip-buy-button') as HTMLAnchorElement;
-                    if (btn) btn.click();
-                  }}
-                >
+                <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ width: "100%", padding: "16px", display: "block", textAlign: "center" }}>
                   🚀 Actualizar a Pro
-                </button>
+                </a>
               </div>
             </div>
           </div>
         </div>
       )}
     </main>
+    </div>
   );
 }
