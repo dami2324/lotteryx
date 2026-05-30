@@ -1,21 +1,25 @@
 import { NextResponse } from "next/server";
 import { saveUser, getUser } from "@/lib/users";
 import { hashPassword, signToken } from "@/lib/crypto";
+import { z } from "zod";
+
+const registerSchema = z.object({
+  name: z.string().trim().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
+  email: z.string().trim().toLowerCase().email("Correo inválido").max(255),
+  password: z.string().trim().min(6, "La contraseña debe tener al menos 6 caracteres").max(100),
+});
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { name?: string; email?: string; password?: string };
-    const name = body.name?.trim();
-    const email = body.email?.trim().toLowerCase();
-    const password = body.password?.trim();
-
-    if (!name || !email || !email.includes("@") || !password) {
-      return NextResponse.json({ error: "Nombre, correo y contraseña son requeridos." }, { status: 400 });
+    const body = await request.json();
+    const parseResult = registerSchema.safeParse(body);
+    
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0]?.message || "Error de validación";
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
-
-    if (password.length < 6) {
-      return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres." }, { status: 400 });
-    }
+    
+    const { name, email, password } = parseResult.data;
 
     const existingUser = await getUser(email);
     if (existingUser) {

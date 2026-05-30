@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser, saveUser } from "@/lib/users";
+import { getUser, saveUser, deleteUser } from "@/lib/users";
 import { verifyToken, hashPassword } from "@/lib/crypto";
 import type { LotteryXUser } from "@/lib/users";
 
@@ -81,5 +81,29 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error updating profile:", error);
     return NextResponse.json({ error: "Error al actualizar perfil" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const token = request.headers.get("authorization")?.replace("Bearer ", "");
+  if (!token) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const email = await verifyToken(token);
+  if (!email) {
+    return NextResponse.json({ error: "Token inválido" }, { status: 401 });
+  }
+
+  try {
+    const success = await deleteUser(email);
+    if (success) {
+      return NextResponse.json({ success: true, message: "Cuenta eliminada correctamente" });
+    } else {
+      return NextResponse.json({ error: "No se pudo eliminar la cuenta" }, { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error deleting profile:", error);
+    return NextResponse.json({ error: "Error interno al eliminar la cuenta" }, { status: 500 });
   }
 }

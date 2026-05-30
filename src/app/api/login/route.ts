@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/users";
 import { verifyPassword, signToken } from "@/lib/crypto";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Correo inválido").min(1, "Falta correo").max(255),
+  password: z.string().trim().min(1, "Falta contraseña").max(100),
+});
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { email, password } = data;
-
-    if (!email || !password) {
-      return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
+    const parseResult = loginSchema.safeParse(data);
+    
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0]?.message || "Error de validación";
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
+    
+    const { email, password } = parseResult.data;
 
     const user = await getUser(email);
 

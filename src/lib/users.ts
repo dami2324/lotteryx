@@ -87,6 +87,19 @@ export async function saveUser(user: LotteryXUser) {
   return { persisted: true };
 }
 
+export async function deleteUser(email: string) {
+  if (!redisUrl || !redisToken) return false;
+  const safeEmail = email.trim().toLowerCase();
+  
+  // Remove from the set of users
+  await redisCommand(["SREM", USERS_KEY, safeEmail]);
+  
+  // Delete the user hash
+  await redisCommand(["DEL", userKey(safeEmail)]);
+  
+  return true;
+}
+
 export async function getUser(email: string): Promise<LotteryXUser | null> {
   if (!redisUrl || !redisToken) return null;
   const safeEmail = email.trim().toLowerCase();

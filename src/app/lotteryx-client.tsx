@@ -415,14 +415,39 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   };
 
   function handleLogout() {
-    setProfile(null);
     window.localStorage.removeItem(PROFILE_KEY);
+    setProfile(null);
     setEmail("");
     setPassword("");
     setConfirmPassword("");
     setName("");
     setActiveTab("wizard");
     resetWizard();
+    setAuthMode("login");
+  }
+
+  async function handleDeleteAccount() {
+    if (!profile) return;
+    const confirmDelete = window.confirm(
+      "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y perderás tu historial, favoritos y billetes guardados."
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch("/api/profile", {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${profile.token}` }
+      });
+      if (res.ok) {
+        alert("Cuenta eliminada exitosamente.");
+        handleLogout();
+      } else {
+        alert("Hubo un error al eliminar tu cuenta.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión al eliminar la cuenta.");
+    }
   }
 
   function resetWizard() {
@@ -1284,6 +1309,16 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
             <button className="logout-btn" onClick={handleLogout} style={{ marginTop: "2rem" }}>
               Cerrar Sesión
             </button>
+
+            <div style={{ marginTop: "3rem", padding: "1.5rem", borderRadius: "12px", border: "1px solid rgba(239, 68, 68, 0.3)", background: "rgba(239, 68, 68, 0.05)" }}>
+              <h3 style={{ color: "#ef4444", margin: "0 0 1rem 0" }}>Zona de Peligro</h3>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+                Una vez que elimines tu cuenta, no hay vuelta atrás. Perderás tus billetes guardados, favoritos e historial de generaciones permanentemente.
+              </p>
+              <button onClick={handleDeleteAccount} style={{ padding: "10px 20px", background: "transparent", color: "#ef4444", border: "1px solid #ef4444", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", transition: "all 0.2s" }} onMouseOver={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }} onMouseOut={e => { e.currentTarget.style.background = "transparent"; }}>
+                Eliminar cuenta permanentemente
+              </button>
+            </div>
           </div>
         )}
 
