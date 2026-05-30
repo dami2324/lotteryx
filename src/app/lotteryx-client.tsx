@@ -575,26 +575,13 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         <div className="sidebar-header">
           <p className="brand">LotteryX</p>
           <h2 className="greeting">Hola, {profile.name.split(" ")[0]} 👋</h2>
-          {isPro ? (
-            <div className="plan-pill pro" style={{ width: "fit-content" }}>Pro activo</div>
-          ) : (
-            <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "8px 12px", fontSize: "0.85rem" }}>
-              🚀 Desbloquear Pro
-            </a>
-          )}
         </div>
         <nav className="sidebar-nav">
           <div className="sidebar-section">SORTEOS</div>
           <button className={`nav-item ${activeTab === "wizard" ? "active" : ""}`} onClick={() => { setActiveTab("wizard"); setMobileMenuOpen(false); }}>
             <span>🏠</span> Inicio
           </button>
-          <button className={`nav-item ${activeTab === "history" ? "active" : ""}`} onClick={() => { setActiveTab("history"); setMobileMenuOpen(false); }}>
-            <span>📋</span> Todos los sorteos
-          </button>
           <div className="sidebar-section">HERRAMIENTAS</div>
-          <button className={`nav-item ${activeTab === "pyramids" ? "active" : ""}`} onClick={() => { setActiveTab("pyramids"); setMobileMenuOpen(false); }}>
-            <span>🔺</span> Pirámides (Próx)
-          </button>
           <button className={`nav-item ${activeTab === "stats" ? "active" : ""}`} onClick={() => {
             if (!isPro) { setShowPricingModal(true); return; }
             setActiveTab("stats"); setMobileMenuOpen(false);
@@ -615,7 +602,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
             <span>⭐</span> Favoritos
           </button>
           <button className={`nav-item ${activeTab === "alerts" ? "active" : ""}`} onClick={() => { setActiveTab("alerts"); setMobileMenuOpen(false); }}>
-            <span>🔔</span> Alertas (Próx)
+            <span>🔔</span> Alertas
           </button>
           <button className={`nav-item ${activeTab === "profile" ? "active" : ""}`} onClick={() => { setActiveTab("profile"); setMobileMenuOpen(false); }}>
             <span>⚙️</span> Configuración
@@ -625,9 +612,20 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
       {/* ===== MAIN CONTENT ===== */}
       <main className="app-main">
-        <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          {mobileMenuOpen ? "✖ Cerrar Menú" : "☰ Menú"}
-        </button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? "✖ Cerrar Menú" : "☰ Menú"}
+          </button>
+          <div style={{ marginLeft: "auto" }}>
+            {isPro ? (
+              <div className="plan-pill pro" style={{ width: "fit-content", padding: "6px 12px" }}>Pro activo</div>
+            ) : (
+              <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ padding: "8px 16px", fontSize: "0.9rem" }}>
+                🚀 Desbloquear Pro
+              </a>
+            )}
+          </div>
+        </div>
         <div className="tab-content">
         {/* ========== WIZARD TAB ========== */}
         {activeTab === "wizard" && (
@@ -1130,15 +1128,69 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           </div>
         )}
         {activeTab === "dreams" && (
-          <div className="fade-in glass-panel" style={{ textAlign: "center", padding: "60px 20px" }}>
-            <h2>🌙 Diccionario de sueños</h2>
-            <p style={{ color: "var(--text-muted)", marginTop: "16px" }}>Busca el significado de tus sueños y descubre qué número jugar. (Próximamente)</p>
+          <div className="fade-in glass-panel" style={{ padding: "40px 20px" }}>
+            <h2 style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "#eab308" }}>🌙</span> Diccionario de sueños
+            </h2>
+            <p style={{ color: "var(--text-muted)", marginBottom: "32px" }}>
+              Busca el significado de tus sueños y descubre qué número jugar.
+            </p>
+            <div className="search-container" style={{ position: "relative", marginBottom: "32px" }}>
+              <input 
+                type="text" 
+                placeholder="¿Qué soñaste hoy? Ej. Perro, agua, dinero..." 
+                className="glass-input" 
+                style={{ width: "100%", padding: "16px 20px", fontSize: "1rem", borderRadius: "12px" }}
+              />
+              <button className="primary-btn" style={{ position: "absolute", right: "8px", top: "8px", padding: "8px 16px" }}>
+                Buscar
+              </button>
+            </div>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "16px" }}>
+              {[
+                { dream: "Agua", number: "01" },
+                { dream: "Perro", number: "14" },
+                { dream: "Dinero", number: "32" },
+                { dream: "Muerte", number: "08" },
+                { dream: "Bebé", number: "02" },
+                { dream: "Boda", number: "90" },
+                { dream: "Culebra", number: "48" },
+                { dream: "Pescado", number: "25" }
+              ].map((d, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ fontSize: "1.1rem", fontWeight: "600", color: "#f8fafc", marginBottom: "8px" }}>{d.dream}</div>
+                  <div style={{ fontSize: "2.2rem", fontWeight: "800", color: "var(--primary)" }}>{d.number}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         {activeTab === "alerts" && (
-          <div className="fade-in glass-panel" style={{ textAlign: "center", padding: "60px 20px" }}>
-            <h2>🔔 Configuración de Alertas</h2>
-            <p style={{ color: "var(--text-muted)", marginTop: "16px" }}>Personaliza qué notificaciones deseas recibir en tu correo. (Próximamente)</p>
+          <div className="fade-in glass-panel" style={{ padding: "40px 20px", maxWidth: "800px" }}>
+            <h2 style={{ marginBottom: "24px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "#eab308" }}>🔔</span> Configurar alertas
+            </h2>
+            <div>
+              {[
+                { id: "gordito", title: "Resultados del Gordito / Extraordinaria", desc: "Notificación cuando salgan los números de sorteos especiales", default: true },
+                { id: "morning", title: "Generación en la mañana", desc: "Recordatorio para generar tus números antes del sorteo", default: true },
+                { id: "dominical", title: "Sorteo dominical", desc: "Resultados de cada domingo", default: false },
+                { id: "miercolito", title: "Miercolito", desc: "Resultados de cada miércoles", default: false },
+                { id: "reminder", title: "Recordatorio antes del sorteo", desc: "1 hora antes de cada sorteo", default: true }
+              ].map(alert => (
+                <div key={alert.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ paddingRight: "16px" }}>
+                    <h4 style={{ margin: "0 0 6px 0", fontSize: "1.1rem", color: "#f1f5f9", fontWeight: 600 }}>{alert.title}</h4>
+                    <p style={{ margin: 0, fontSize: "0.85rem", color: "#64748b" }}>{alert.desc}</p>
+                  </div>
+                  <label className="switch">
+                    <input type="checkbox" defaultChecked={alert.default} />
+                    <span className="slider round"></span>
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>{/* end tab-content */}
