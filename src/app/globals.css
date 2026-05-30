@@ -70,8 +70,23 @@ body {
 .app-main {
   flex: 1;
   padding: 40px 32px 60px;
-  max-width: 860px;
+  max-width: 1200px;
   min-width: 0;
+}
+
+/* ── Wizard layout (main + side panel) ─────────────────── */
+.wizard-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+.wizard-layout > div:first-child {
+  flex: 1 1 500px;
+  min-width: 0;
+}
+.previous-draw-panel {
+  flex: 0 0 320px;
+  min-width: 300px;
 }
 
 /* ── Sidebar header (brand + user info) ──────────────────── */
@@ -1349,3 +1364,13 @@ input:checked + .slider:before {
   }
 }
 
+@media (max-width: 900px) {
+  .wizard-layout {
+    flex-direction: column;
+  }
+  .previous-draw-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}

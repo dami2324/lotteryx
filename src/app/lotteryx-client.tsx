@@ -715,8 +715,8 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", alignItems: "flex-start" }}>
-              <div style={{ flex: "1 1 500px", minWidth: 0 }}>
+            <div className="wizard-layout">
+              <div>
                 {!hasGenerated ? (
                   <section className="wizard-container" style={{ margin: 0, width: "100%", maxWidth: "none" }}>
                     {/* STEP INDICATORS */}
@@ -923,34 +923,40 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           </div>
 
           {/* PREVIOUS DRAW PANEL */}
-              <div style={{ flex: "0 1 320px", minWidth: "300px" }}>
+              <div className="previous-draw-panel">
                 <div className="glass-panel" style={{ padding: "24px", position: "sticky", top: "24px" }}>
                   <h3 style={{ margin: "0 0 16px 0", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "8px", color: "#f8fafc" }}>
                     <span style={{ color: "#eab308" }}>🏆</span> Último Resultado
                   </h3>
-                  {officialHistory.length > 0 ? (
-                    <div>
-                      <div style={{ fontSize: "0.9rem", color: "#94a3b8", marginBottom: "16px", textTransform: "capitalize" }}>
-                        {officialHistory[0].draw} - {officialHistory[0].date}
+                  {(() => {
+                    const currentYear = new Date().getFullYear().toString();
+                    const latestDraw = [...officialHistory].reverse().find(r => r.date.startsWith(currentYear));
+                    const drawDisplayName: Record<string, string> = { Gordito: "Gordito del Zodíaco", Extraordinaria: "Sorteo Extraordinario", Miercolito: "Miercolito", Dominical: "Dominical" };
+                    if (!latestDraw) return (
+                      <div style={{ color: "#64748b", fontSize: "0.9rem", textAlign: "center", padding: "20px 0" }}>Cargando resultados...</div>
+                    );
+                    return (
+                      <div>
+                        <div style={{ fontSize: "0.9rem", color: "#94a3b8", marginBottom: "16px" }}>
+                          {drawDisplayName[latestDraw.draw] || latestDraw.draw} — {latestDraw.date}
+                        </div>
+                        <div style={{ display: "grid", gap: "12px" }}>
+                          <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                            <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>1er Premio</div>
+                            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#f8fafc", letterSpacing: "2px" }}>{latestDraw.first} <span style={{ color: "var(--primary)", fontSize: "1.2rem" }}>{latestDraw.firstTerm}</span></div>
+                          </div>
+                          <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                            <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>2do Premio</div>
+                            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "2px" }}>{latestDraw.second} <span style={{ color: "var(--primary)", fontSize: "1rem" }}>{latestDraw.secondTerm}</span></div>
+                          </div>
+                          <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                            <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>3er Premio</div>
+                            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "2px" }}>{latestDraw.third} <span style={{ color: "var(--primary)", fontSize: "1rem" }}>{latestDraw.thirdTerm}</span></div>
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ display: "grid", gap: "12px" }}>
-                        <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
-                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>1er Premio</div>
-                          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#f8fafc", letterSpacing: "2px" }}>{officialHistory[0].first} <span style={{ color: "var(--primary)", fontSize: "1.2rem" }}>{officialHistory[0].firstTerm}</span></div>
-                        </div>
-                        <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
-                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>2do Premio</div>
-                          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "2px" }}>{officialHistory[0].second} <span style={{ color: "var(--primary)", fontSize: "1rem" }}>{officialHistory[0].secondTerm}</span></div>
-                        </div>
-                        <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
-                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>3er Premio</div>
-                          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "2px" }}>{officialHistory[0].third} <span style={{ color: "var(--primary)", fontSize: "1rem" }}>{officialHistory[0].thirdTerm}</span></div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ color: "#64748b", fontSize: "0.9rem", textAlign: "center", padding: "20px 0" }}>Cargando resultados...</div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -1343,6 +1349,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   <li>⭐ Mis Favoritos con Historial de Aciertos</li>
                   <li>⭐ Alertas de Resultados del Sorteo</li>
                   <li>⭐ Generador y Rastreador de Billetes</li>
+                  <li>⭐ Diccionario de Sueños</li>
                 </ul>
                 <a href={`https://payhip.com/buy?link=ih1Cy&email=${encodeURIComponent(profile.email)}`} className="payhip-buy-button premium-upgrade-btn" data-theme="green" data-product="ih1Cy" style={{ width: "100%", padding: "16px", display: "block", textAlign: "center" }}>
                   🚀 Actualizar a Pro
