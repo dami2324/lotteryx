@@ -19,6 +19,7 @@ type Profile = {
   tickets?: Ticket[];
   stats?: UserStats;
   generationHistory?: GenerationRecord[];
+  alertsConfig?: Record<string, boolean>;
   photo?: string;
 };
 
@@ -96,6 +97,51 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [dreamResults, setDreamResults] = useState<{word: string, number: string}[]>([]);
   const [isDreamLoading, setIsDreamLoading] = useState(false);
   const [dreamSearched, setDreamSearched] = useState(false);
+
+  // Alerts tab state
+  const [alertsState, setAlertsState] = useState<Record<string, boolean>>({
+    gordito: true,
+    morning: true,
+    dominical: false,
+    miercolito: false,
+    reminder: true
+  });
+  const [isSavingAlerts, setIsSavingAlerts] = useState(false);
+
+  useEffect(() => {
+    if (profile?.alertsConfig) {
+      setAlertsState(prev => ({ ...prev, ...profile.alertsConfig }));
+    }
+  }, [profile]);
+
+  const handleSaveAlerts = async () => {
+    if (!profile) return;
+    setIsSavingAlerts(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${profile.token}`
+        },
+        body: JSON.stringify({ alertsConfig: alertsState })
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        const updatedProfile = { ...profile, alertsConfig: data.user.alertsConfig };
+        setProfile(updatedProfile);
+        window.localStorage.setItem(PROFILE_KEY, JSON.stringify(updatedProfile));
+        alert("¡Alertas guardadas exitosamente!");
+      } else {
+        alert("Error al guardar preferencias.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión al guardar preferencias.");
+    } finally {
+      setIsSavingAlerts(false);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === "dreams" && dreamResults.length === 0 && !dreamSearched) {
@@ -1310,11 +1356,33 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                     <p style={{ margin: 0, fontSize: "0.85rem", color: "#64748b" }}>{alert.desc}</p>
                   </div>
                   <label className="switch">
-                    <input type="checkbox" defaultChecked={alert.default} />
+                    <input 
+                      type="checkbox" 
+                      checked={alertsState[alert.id] ?? alert.default} 
+                      onChange={(e) => setAlertsState(prev => ({ ...prev, [alert.id]: e.target.checked }))} 
+                    />
                     <span className="slider round"></span>
                   </label>
                 </div>
               ))}
+            </div>
+            <div style={{ marginTop: "32px", textAlign: "right" }}>
+              <button 
+                onClick={handleSaveAlerts} 
+                disabled={isSavingAlerts}
+                style={{
+                  padding: "12px 24px",
+                  background: "var(--primary)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  cursor: isSavingAlerts ? "wait" : "pointer",
+                  opacity: isSavingAlerts ? 0.7 : 1
+                }}
+              >
+                {isSavingAlerts ? "Guardando..." : "Guardar preferencias"}
+              </button>
             </div>
           </div>
         )}
