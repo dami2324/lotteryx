@@ -91,6 +91,33 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [isStatsLoading, setIsStatsLoading] = useState(false);
   const [officialHistory, setOfficialHistory] = useState<DrawRow[]>([]);
 
+  // Dreams tab state
+  const [dreamQuery, setDreamQuery] = useState("");
+  const [dreamResults, setDreamResults] = useState<{word: string, number: string}[]>([]);
+  const [isDreamLoading, setIsDreamLoading] = useState(false);
+  const [dreamSearched, setDreamSearched] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "dreams" && dreamResults.length === 0 && !dreamSearched) {
+      fetch("/api/dreams").then(r => r.json()).then(d => setDreamResults(d.results || []));
+    }
+  }, [activeTab, dreamSearched, dreamResults.length]);
+
+  const handleDreamSearch = async () => {
+    if (!dreamQuery.trim()) return;
+    setIsDreamLoading(true);
+    setDreamSearched(true);
+    try {
+      const res = await fetch(`/api/dreams?q=${encodeURIComponent(dreamQuery)}`);
+      const data = await res.json();
+      setDreamResults(data.results || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsDreamLoading(false);
+    }
+  };
+
   useEffect(() => {
     const stored = window.localStorage.getItem(PROFILE_KEY);
     if (stored) {
@@ -132,13 +159,56 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   }, [activeTab, statsDraw, statsTimeRange]);
 
   useEffect(() => {
-    if (activeTab === "favorites" && officialHistory.length === 0) {
+    if ((activeTab === "favorites" || activeTab === "wizard") && officialHistory.length === 0) {
       fetch("/api/history")
         .then(res => res.json())
         .then(data => Array.isArray(data) && setOfficialHistory(data))
         .catch(console.error);
     }
   }, [activeTab, officialHistory.length]);
+
+  const nextDrawInfo = useMemo(() => {
+    const now = new Date();
+    const panamaOffset = -5 * 60;
+    const panamaTime = new Date(now.getTime() + (panamaOffset - now.getTimezoneOffset()) * 60000);
+    
+    const day = panamaTime.getDay();
+    const hour = panamaTime.getHours();
+    
+    let nextDate = new Date(panamaTime);
+    let drawName = "Miercolito";
+    let drawHour = 15;
+
+    if (day === 0) {
+      if (hour >= 15) {
+        nextDate.setDate(nextDate.getDate() + 3);
+      } else {
+        drawName = "Dominical";
+      }
+    } else if (day === 3) {
+      if (hour >= 15) {
+        nextDate.setDate(nextDate.getDate() + 4);
+        drawName = "Dominical";
+      }
+    } else if (day > 0 && day < 3) {
+      nextDate.setDate(nextDate.getDate() + (3 - day));
+    } else if (day > 3) {
+      nextDate.setDate(nextDate.getDate() + (7 - day));
+      drawName = "Dominical";
+    }
+
+    const isToday = nextDate.getDate() === panamaTime.getDate() && nextDate.getMonth() === panamaTime.getMonth();
+    
+    let dateStr = nextDate.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    
+    return {
+      name: drawName,
+      date: dateStr,
+      isToday,
+      timeStr: "3:00 PM"
+    };
+  }, []);
 
   const allPicks = useMemo(() => {
     return [...currentAnalysis.topFive, ...currentAnalysis.backups];
@@ -591,7 +661,10 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
           <button className={`nav-item ${activeTab === "tickets" ? "active" : ""}`} onClick={() => { setActiveTab("tickets"); setMobileMenuOpen(false); }}>
             <span>🎟️</span> Verificar billete
           </button>
-          <button className={`nav-item ${activeTab === "dreams" ? "active" : ""}`} onClick={() => { setActiveTab("dreams"); setMobileMenuOpen(false); }}>
+          <button className={`nav-item ${activeTab === "dreams" ? "active" : ""}`} onClick={() => {
+            if (!isPro) { setShowPricingModal(true); return; }
+            setActiveTab("dreams"); setMobileMenuOpen(false);
+          }}>
             <span>🌙</span> Diccionario sueños
           </button>
           <div className="sidebar-section">CUENTA</div>
@@ -630,9 +703,23 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         {/* ========== WIZARD TAB ========== */}
         {activeTab === "wizard" && (
           <div className="fade-in">
-            {!hasGenerated ? (
-              <section className="wizard-container">
-                {/* STEP INDICATORS */}
+            {/* NEXT DRAW BANNER */}
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px 24px", borderRadius: "16px", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600, color: "#f8fafc" }}>{nextDrawInfo.name}</h3>
+                <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", color: "#94a3b8" }}>{nextDrawInfo.date}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(239, 68, 68, 0.1)", padding: "6px 12px", borderRadius: "20px", color: "#ef4444", fontSize: "0.85rem", fontWeight: 600, border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+                <span style={{ display: "inline-block", width: "8px", height: "8px", backgroundColor: "#ef4444", borderRadius: "50%", animation: "pulse 2s infinite" }}></span>
+                {nextDrawInfo.isToday ? "Sorteo hoy" : "Próximo sorteo"} {nextDrawInfo.timeStr}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", alignItems: "flex-start" }}>
+              <div style={{ flex: "1 1 500px", minWidth: 0 }}>
+                {!hasGenerated ? (
+                  <section className="wizard-container" style={{ margin: 0, width: "100%", maxWidth: "none" }}>
+                    {/* STEP INDICATORS */}
                 <div className="step-indicators">
                   {[1, 2].map(s => (
                     <div key={s} className={`step-dot ${wizardStep >= s ? "active" : ""} ${wizardStep === s ? "current" : ""}`}>
@@ -833,6 +920,40 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                 )}
               </div>
             )}
+          </div>
+
+          {/* PREVIOUS DRAW PANEL */}
+              <div style={{ flex: "0 1 320px", minWidth: "300px" }}>
+                <div className="glass-panel" style={{ padding: "24px", position: "sticky", top: "24px" }}>
+                  <h3 style={{ margin: "0 0 16px 0", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "8px", color: "#f8fafc" }}>
+                    <span style={{ color: "#eab308" }}>🏆</span> Último Resultado
+                  </h3>
+                  {officialHistory.length > 0 ? (
+                    <div>
+                      <div style={{ fontSize: "0.9rem", color: "#94a3b8", marginBottom: "16px", textTransform: "capitalize" }}>
+                        {officialHistory[0].draw} - {officialHistory[0].date}
+                      </div>
+                      <div style={{ display: "grid", gap: "12px" }}>
+                        <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>1er Premio</div>
+                          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#f8fafc", letterSpacing: "2px" }}>{officialHistory[0].first} <span style={{ color: "var(--primary)", fontSize: "1.2rem" }}>{officialHistory[0].firstTerm}</span></div>
+                        </div>
+                        <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>2do Premio</div>
+                          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "2px" }}>{officialHistory[0].second} <span style={{ color: "var(--primary)", fontSize: "1rem" }}>{officialHistory[0].secondTerm}</span></div>
+                        </div>
+                        <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", textTransform: "uppercase", marginBottom: "4px" }}>3er Premio</div>
+                          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "2px" }}>{officialHistory[0].third} <span style={{ color: "var(--primary)", fontSize: "1rem" }}>{officialHistory[0].thirdTerm}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ color: "#64748b", fontSize: "0.9rem", textAlign: "center", padding: "20px 0" }}>Cargando resultados...</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1133,36 +1254,34 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
               <span style={{ color: "#eab308" }}>🌙</span> Diccionario de sueños
             </h2>
             <p style={{ color: "var(--text-muted)", marginBottom: "32px" }}>
-              Busca el significado de tus sueños y descubre qué número jugar.
+              Busca el significado de tus sueños y descubre qué número jugar. Soporta palabras exactas o generación inteligente.
             </p>
             <div className="search-container" style={{ position: "relative", marginBottom: "32px" }}>
               <input 
                 type="text" 
+                value={dreamQuery}
+                onChange={e => setDreamQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleDreamSearch()}
                 placeholder="¿Qué soñaste hoy? Ej. Perro, agua, dinero..." 
                 className="glass-input" 
                 style={{ width: "100%", padding: "16px 20px", fontSize: "1rem", borderRadius: "12px" }}
               />
-              <button className="primary-btn" style={{ position: "absolute", right: "8px", top: "8px", padding: "8px 16px" }}>
-                Buscar
+              <button onClick={handleDreamSearch} disabled={isDreamLoading} className="primary-btn" style={{ position: "absolute", right: "8px", top: "8px", padding: "8px 16px" }}>
+                {isDreamLoading ? "Buscando..." : "Buscar"}
               </button>
             </div>
             
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "16px" }}>
-              {[
-                { dream: "Agua", number: "01" },
-                { dream: "Perro", number: "14" },
-                { dream: "Dinero", number: "32" },
-                { dream: "Muerte", number: "08" },
-                { dream: "Bebé", number: "02" },
-                { dream: "Boda", number: "90" },
-                { dream: "Culebra", number: "48" },
-                { dream: "Pescado", number: "25" }
-              ].map((d, i) => (
-                <div key={i} style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div style={{ fontSize: "1.1rem", fontWeight: "600", color: "#f8fafc", marginBottom: "8px" }}>{d.dream}</div>
+              {dreamResults.length > 0 ? dreamResults.map((d, i) => (
+                <div key={i} className="fade-in" style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ fontSize: "1.1rem", fontWeight: "600", color: "#f8fafc", marginBottom: "8px", textTransform: "capitalize" }}>{d.word}</div>
                   <div style={{ fontSize: "2.2rem", fontWeight: "800", color: "var(--primary)" }}>{d.number}</div>
                 </div>
-              ))}
+              )) : (
+                <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+                  No se encontraron resultados. Intenta con otra palabra.
+                </div>
+              )}
             </div>
           </div>
         )}

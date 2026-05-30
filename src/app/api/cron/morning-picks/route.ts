@@ -27,6 +27,7 @@ export async function GET(request: Request) {
   const history = await getHistory();
   const todayDraws = history.filter(r => r.date === todayStr);
   const extraordinariaToday = todayDraws.some(r => r.draw === "Extraordinaria");
+  const gorditoToday = todayDraws.some(r => r.draw.includes("Gordito"));
   const proUsers = (await getUsers()).filter(isProUser);
 
   const results: Record<string, number> = {};
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
   if (hour === alertHour && dayOfWeek === 0) {
     plannedDraws.push("Dominical");
   }
-  if (hour === alertHour && dayOfWeek === 5) {
+  if (hour === alertHour && gorditoToday) {
     plannedDraws.push("Gordito");
   }
   if (hour === extraAlertHour && extraordinariaToday) {
@@ -53,6 +54,15 @@ export async function GET(request: Request) {
     try {
       const emailResults = await Promise.all(
         proUsers.map(async user => {
+          // Check alertsConfig first
+          const config = user.alertsConfig || {};
+          if (config.morning === false) {
+            return { sent: false, reason: "Usuario desactivó alertas matutinas" };
+          }
+          if (drawName === "Dominical" && config.dominical === false) return { sent: false, reason: "Desactivado" };
+          if (drawName === "Miercolito" && config.miercolito === false) return { sent: false, reason: "Desactivado" };
+          if ((drawName === "Gordito" || drawName === "Extraordinaria") && config.gordito === false) return { sent: false, reason: "Desactivado" };
+
           const strategy = (user.favoriteStrategy || "jump") as StrategyType;
           if (strategy === "last_year") {
             return { sent: false, reason: "Estrategia last_year no envía correos" };

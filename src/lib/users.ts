@@ -18,6 +18,7 @@ export type LotteryXUser = {
   proUntil?: string;
   payhipSubscriptionId?: string;
   favoriteStrategy?: string;
+  alertsConfig?: Record<string, boolean>;
 };
 
 const USERS_KEY = "lotteryx:users";
@@ -77,6 +78,9 @@ export async function saveUser(user: LotteryXUser) {
   if (user.favoriteStrategy) {
     fields.push("favoriteStrategy", user.favoriteStrategy);
   }
+  if (user.alertsConfig) {
+    fields.push("alertsConfig", JSON.stringify(user.alertsConfig));
+  }
 
   await redisCommand(["HSET", userKey(email), ...fields]);
   
@@ -90,7 +94,7 @@ export async function getUser(email: string): Promise<LotteryXUser | null> {
     "email", "name", "createdAt", "password", 
     "drawPreference", "notificationEmail", "notificationPush", 
     "favorites", "tickets", "stats", "generationHistory", "photo",
-    "plan", "subscriptionStatus", "proUntil", "payhipSubscriptionId", "favoriteStrategy"
+    "plan", "subscriptionStatus", "proUntil", "payhipSubscriptionId", "favoriteStrategy", "alertsConfig"
   ]);
   
   if (!data[0]) return null;
@@ -115,6 +119,11 @@ export async function getUser(email: string): Promise<LotteryXUser | null> {
     generationHistory = data[10] ? JSON.parse(data[10]) : [];
   } catch (e) {}
 
+  let alertsConfig: Record<string, boolean> = {};
+  try {
+    alertsConfig = data[17] ? JSON.parse(data[17]) : {};
+  } catch (e) {}
+
   return {
     email: data[0],
     name: data[1] ?? "Jugador",
@@ -132,7 +141,8 @@ export async function getUser(email: string): Promise<LotteryXUser | null> {
     subscriptionStatus: normalizeSubscriptionStatus(data[13], data[14]),
     proUntil: data[14] ?? undefined,
     payhipSubscriptionId: data[15] ?? undefined,
-    favoriteStrategy: data[16] ?? "jump"
+    favoriteStrategy: data[16] ?? "jump",
+    alertsConfig
   };
 }
 

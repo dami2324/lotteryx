@@ -75,7 +75,11 @@ export async function GET(request: Request) {
 
       if (user.generationHistory) {
         // Find generations for the same draw type that were created before or on today's date
-        const relevantGenerations = user.generationHistory.filter(g => g.draw === draw.draw);
+        const relevantGenerations = user.generationHistory.filter(g => 
+          g.draw === draw.draw || 
+          (g.draw === "Gordito" && draw.draw.includes("Gordito")) ||
+          (g.draw.includes("Gordito") && draw.draw === "Gordito")
+        );
 
         for (const gen of relevantGenerations) {
           for (const pick of gen.picks) {
