@@ -757,8 +757,12 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
       {/* ===== MAIN CONTENT ===== */}
       <main className="app-main">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <div className="mobile-only-header" style={{ display: "none" }}>
+            <p className="brand" style={{ fontSize: "1.1rem", margin: 0, padding: 0 }}>LotteryX</p>
+            <h2 className="greeting" style={{ fontSize: "1.2rem", margin: "4px 0 0 0", padding: 0 }}>Hola, {profile.name.split(" ")[0]} 👋</h2>
+          </div>
           <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? "✖ Cerrar Menú" : "☰ Menú"}
+            {mobileMenuOpen ? "✖ Cerrar" : "☰ Menú"}
           </button>
           <div style={{ marginLeft: "auto" }}>
             {isPro ? (

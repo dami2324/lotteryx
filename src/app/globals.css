@@ -1335,32 +1335,91 @@ input:checked + .slider:before {
     flex-direction: column;
   }
   .app-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    height: auto;
-    position: relative;
-    padding: 16px;
+    height: 70px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--glass-border);
     border-right: none;
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: none;
+    padding: 0;
+    z-index: 1000;
   }
-  .sidebar-nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 4px;
+  .sidebar-header {
+    display: none;
   }
   .sidebar-section {
-    width: 100%;
-    padding: 8px 4px 2px;
+    display: none;
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 0 4px;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    display: none;
   }
   .nav-item {
-    padding: 8px 10px;
-    font-size: 0.82rem;
     flex: 0 0 auto;
+    min-width: 72px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    background: transparent;
+    border: none;
+    text-align: center;
+    scroll-snap-align: start;
+    margin: 0 2px;
+  }
+  .nav-item.active {
+    background: transparent;
+    color: var(--primary);
+  }
+  .nav-item span:first-child {
+    font-size: 1.3rem;
   }
   .app-main {
-    padding: 20px 16px 40px;
+    padding: 20px 16px 90px;
   }
   .mobile-menu-btn {
     display: none;
+  }
+  .mobile-only-header {
+    display: block !important;
+  }
+  .premium-upgrade-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+  }
+  /* Reduce size of choice cards on mobile to fit better */
+  .wizard-choices {
+    gap: 12px;
+  }
+  .wizard-choices button {
+    padding: 16px 10px;
+  }
+  .wizard-choices h3 {
+    font-size: 1.05rem;
+  }
+  .wizard-choices p {
+    font-size: 0.8rem;
   }
 }
 
