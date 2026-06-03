@@ -62,6 +62,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [enteredApp, setEnteredApp] = useState(false);
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -360,6 +361,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
         notificationPush: data.notificationPush
       };
       setProfile(newProfile);
+      setEnteredApp(true);
       window.localStorage.setItem(PROFILE_KEY, JSON.stringify(newProfile));
     } catch (e: any) {
       setAuthError(e.message || "Credenciales incorrectas");
@@ -434,6 +436,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     setActiveTab("wizard");
     resetWizard();
     setAuthMode("login");
+    setEnteredApp(false);
   }
 
   async function handleDeleteAccount() {
@@ -656,20 +659,32 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     URL.revokeObjectURL(url);
   };
 
-  // ---------- AUTH SCREEN ----------
-  if (!profile) {
+  // ---------- AUTH / WELCOME SCREEN ----------
+  if (!profile || !enteredApp) {
     return (
       <main className="shell auth-shell">
         <section className="auth-card glass-panel">
           <p className="brand">LotteryX</p>
-          <h1>{authMode === "login" ? "Iniciar Sesión" : "Crear Cuenta"}</h1>
+          <h1>{profile ? "Bienvenido de vuelta" : (authMode === "login" ? "Iniciar Sesión" : "Crear Cuenta")}</h1>
           <p className="draw-date">Tus números calculados con inteligencia estadística.</p>
-          <form onSubmit={submitAuth}>
-            {authError && <div className="auth-error">{authError}</div>}
+          
+          {profile ? (
+            <div style={{ textAlign: "center", marginTop: "24px" }}>
+              <p style={{ color: "#e2e8f0", fontSize: "1.2rem", marginBottom: "32px", fontWeight: 600 }}>{profile.name}</p>
+              <button className="primary-btn" onClick={() => setEnteredApp(true)} style={{ width: "100%", padding: "16px", fontSize: "1.1rem" }}>
+                Entrar a la app
+              </button>
+              <button className="secondary-btn" onClick={handleLogout} style={{ width: "100%", padding: "12px", marginTop: "16px", fontSize: "0.9rem", background: "transparent", border: "1px solid rgba(255,255,255,0.1)" }}>
+                Cerrar sesión y usar otra cuenta
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={submitAuth}>
+              {authError && <div className="auth-error">{authError}</div>}
 
-            {authMode === "register" && (
-              <label>Nombre<input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required /></label>
-            )}
+              {authMode === "register" && (
+                <label>Nombre<input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required /></label>
+              )}
 
             <label>Correo<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required /></label>
             <label>Contraseña
@@ -690,15 +705,15 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
             )}
 
             <button type="submit" disabled={isSubmitting}>{isSubmitting ? "Procesando..." : authMode === "login" ? "Entrar" : "Registrarme"}</button>
-          </form>
-
-          <div className="auth-switch">
-            {authMode === "login" ? (
-              <p>¿No tienes cuenta? <button type="button" onClick={() => { setAuthMode("register"); setAuthError(""); }}>Regístrate aquí</button></p>
-            ) : (
-              <p>¿Ya tienes cuenta? <button type="button" onClick={() => { setAuthMode("login"); setAuthError(""); }}>Inicia sesión</button></p>
-            )}
-          </div>
+            <div className="auth-switch">
+              {authMode === "login" ? (
+                <p>¿No tienes cuenta? <button type="button" onClick={() => { setAuthMode("register"); setAuthError(""); }}>Crea una gratis</button></p>
+              ) : (
+                <p>¿Ya tienes cuenta? <button type="button" onClick={() => { setAuthMode("login"); setAuthError(""); }}>Inicia sesión</button></p>
+              )}
+            </div>
+            </form>
+          )}
         </section>
       </main>
     );
