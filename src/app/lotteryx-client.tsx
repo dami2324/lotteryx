@@ -215,17 +215,19 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
   const nextDrawInfo = useMemo(() => {
     const now = new Date();
-    const panamaOffset = -5 * 60;
-    const panamaTime = new Date(now.getTime() + (panamaOffset - now.getTimezoneOffset()) * 60000);
+    // Panama is always UTC-5 (no daylight saving).
+    // Subtract 5 hours from the UTC timestamp and use getUTC* methods.
+    const panamaMs = now.getTime() - 5 * 60 * 60 * 1000;
+    const pt = new Date(panamaMs);
 
-    const day = panamaTime.getDay();
-    const hour = panamaTime.getHours();
-    const minute = panamaTime.getMinutes();
-    // Draw ends at 3:30 PM Panama time
+    const day = pt.getUTCDay();      // 0=Sun, 3=Wed
+    const hour = pt.getUTCHours();   // 0–23 in Panama local time
+    const minute = pt.getUTCMinutes();
+
+    // Draw ends at 3:30 PM (15:30) Panama time
     const drawOver = hour > 15 || (hour === 15 && minute >= 30);
-    const drawStarted = hour >= 15;
 
-    let nextDate = new Date(panamaTime);
+    let nextDate = new Date(pt); // mutable copy (UTC methods used for date arithmetic)
     let drawName = "Miercolito";
     let isPlayed = false;
     let isToday = false;
@@ -233,9 +235,8 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     if (day === 0) {
       // Sunday = Dominical day
       if (drawOver) {
-        // Already played today → next is Wednesday (Miercolito)
         isPlayed = true;
-        nextDate.setDate(nextDate.getDate() + 3);
+        nextDate.setUTCDate(nextDate.getUTCDate() + 3); // next Wednesday
         drawName = "Miercolito";
       } else {
         drawName = "Dominical";
@@ -244,9 +245,8 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     } else if (day === 3) {
       // Wednesday = Miercolito day
       if (drawOver) {
-        // Already played today → next is Sunday (Dominical)
         isPlayed = true;
-        nextDate.setDate(nextDate.getDate() + 4);
+        nextDate.setUTCDate(nextDate.getUTCDate() + 4); // next Sunday
         drawName = "Dominical";
       } else {
         drawName = "Miercolito";
@@ -254,15 +254,17 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
       }
     } else if (day > 0 && day < 3) {
       // Mon, Tue → next draw is Wednesday (Miercolito)
-      nextDate.setDate(nextDate.getDate() + (3 - day));
+      nextDate.setUTCDate(nextDate.getUTCDate() + (3 - day));
       drawName = "Miercolito";
     } else {
       // Thu, Fri, Sat → next draw is Sunday (Dominical)
-      nextDate.setDate(nextDate.getDate() + (7 - day));
+      nextDate.setUTCDate(nextDate.getUTCDate() + (7 - day));
       drawName = "Dominical";
     }
 
-    let dateStr = nextDate.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    // Format the date using the actual UTC date values (Panama date)
+    const displayDate = new Date(Date.UTC(nextDate.getUTCFullYear(), nextDate.getUTCMonth(), nextDate.getUTCDate()));
+    let dateStr = displayDate.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
     dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
 
     return {
