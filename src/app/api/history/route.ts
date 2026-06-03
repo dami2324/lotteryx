@@ -8,7 +8,7 @@ export async function GET() {
     const history = await getHistory();
     return NextResponse.json(history, {
       headers: {
-        "Cache-Control": "s-maxage=3600, stale-while-revalidate=7200"
+        "Cache-Control": "s-maxage=300, stale-while-revalidate=600"
       }
     });
   } catch (error) {

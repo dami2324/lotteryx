@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/afternoon-results",
-      "schedule": "0 21 * * *"
+      "schedule": "45 20 * * *"
     }
   ]
 }

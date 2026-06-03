@@ -91,6 +91,15 @@ const PANAMA_LOTERIA = {
   Extraordinaria: "https://www.panamaloteria.com/resultados-sorteo-extraordinario.php"
 } as const;
 
+// NacionalLoteria publishes results very fast (within minutes of the draw)
+const NACIONAL_LOTERIA_BASE = "https://www.nacionalloteria.com/panama";
+const NACIONAL_LOTERIA_DRAWS: Partial<Record<DrawName, string>> = {
+  Miercolito: "sorteo-miercolito",
+  Dominical: "sorteo-dominical",
+  Gordito: "sorteo-gordito-del-zodiaco",
+  Extraordinaria: "sorteo-extraordinario",
+};
+
 const MONTHS: Record<string, number> = {
   Jan: 0,
   Feb: 1,
@@ -338,17 +347,28 @@ export async function getPatternAnalysis(
 }
 
 export async function getHistory(): Promise<DrawRow[]> {
-  const [miercolito, dominical, gorditoGuru, extraordinariaGuru, gorditoPanama, extraordinariaPanama] = await Promise.all([
+  const [
+    miercolito, dominical, gorditoGuru, extraordinariaGuru,
+    gorditoPanama, extraordinariaPanama,
+    nacMiercolito, nacDominical, nacGordito, nacExtraordinaria
+  ] = await Promise.all([
     fetchLotteryGuru(LOTTERY_GURU.Miercolito, "Miercolito"),
     fetchLotteryGuru(LOTTERY_GURU.Dominical, "Dominical"),
     fetchLotteryGuru(LOTTERY_GURU.Gordito, "Gordito"),
     fetchLotteryGuru(LOTTERY_GURU.Extraordinaria, "Extraordinaria"),
     fetchPanamaLoteria(PANAMA_LOTERIA.Gordito, "Gordito"),
-    fetchPanamaLoteria(PANAMA_LOTERIA.Extraordinaria, "Extraordinaria")
+    fetchPanamaLoteria(PANAMA_LOTERIA.Extraordinaria, "Extraordinaria"),
+    // NacionalLoteria: fast source, scraped for recent draws (last 30 days)
+    fetchNacionalLoteria("Miercolito", 30),
+    fetchNacionalLoteria("Dominical", 30),
+    fetchNacionalLoteria("Gordito", 30),
+    fetchNacionalLoteria("Extraordinaria", 30),
   ]);
   const seedRows = await getSeedHistory().catch(() => []);
 
   const unique = new Map<string, DrawRow>();
+  // Insert in order of priority: seedRows first (lowest priority),
+  // then LotteryGuru/PanamaLoteria, then NacionalLoteria last (highest priority = overwrites)
   for (const row of [
     ...seedRows,
     ...miercolito,
@@ -356,7 +376,11 @@ export async function getHistory(): Promise<DrawRow[]> {
     ...gorditoGuru,
     ...extraordinariaGuru,
     ...gorditoPanama,
-    ...extraordinariaPanama
+    ...extraordinariaPanama,
+    ...nacMiercolito,
+    ...nacDominical,
+    ...nacGordito,
+    ...nacExtraordinaria,
   ]) {
     unique.set(`${row.date}|${row.draw}`, row);
   }
@@ -367,6 +391,79 @@ export async function getHistory(): Promise<DrawRow[]> {
   });
 
   return rows;
+}
+
+/**
+ * Fetches recent results from NacionalLoteria.com — publishes results very quickly after each draw.
+ * We iterate day-by-day over the last `daysBack` days looking for draw days.
+ */
+async function fetchNacionalLoteria(draw: DrawName, daysBack: number): Promise<DrawRow[]> {
+  const slug = NACIONAL_LOTERIA_DRAWS[draw];
+  if (!slug) return [];
+
+  const results: DrawRow[] = [];
+  const now = getPanamaNow();
+
+  // For Miercolito check Wednesdays, for Dominical check Sundays, for Gordito/Extraordinaria check Fridays
+  const targetWeekdays = draw === "Miercolito" ? [3] : draw === "Dominical" ? [0] : [5];
+
+  for (let i = 0; i <= daysBack; i++) {
+    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+    if (!targetWeekdays.includes(date.getUTCDay())) continue;
+
+    const dateStr = toDateKey(date);
+    const url = `${NACIONAL_LOTERIA_BASE}/${slug}.php?del-dia=${dateStr}`;
+
+    try {
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { "User-Agent": "Mozilla/5.0 LotteryX/1.0" }
+      });
+      if (!res.ok) continue;
+
+      const html = await res.text();
+      const row = parseNacionalLoteriaPage(html, draw, dateStr);
+      if (row) results.push(row);
+    } catch {
+      // Skip on network error
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Parse the NacionalLoteria individual draw page.
+ * The prizes are in a <table> with rows like:
+ *   <td class="res text-red">Primer premio</td><td class="res">5770</td>
+ *   <td class="res text-red">Segundo premio</td><td class="res">8500</td>
+ *   <td class="res text-red">Tercer premio</td><td class="res">4006</td>
+ */
+function parseNacionalLoteriaPage(html: string, draw: DrawName, dateStr: string): DrawRow | null {
+  const firstMatch = html.match(/Primer\s+premio<\/td>\s*<td[^>]*>\s*(\d{4,5})\s*<\/td>/i);
+  const secondMatch = html.match(/Segundo\s+premio<\/td>\s*<td[^>]*>\s*(\d{4,5})\s*<\/td>/i);
+  const thirdMatch = html.match(/Tercer\s+premio<\/td>\s*<td[^>]*>\s*(\d{4,5})\s*<\/td>/i);
+
+  if (!firstMatch) return null;
+
+  const first = firstMatch[1].padStart(4, "0");
+  const second = secondMatch ? secondMatch[1].padStart(4, "0") : "0000";
+  const third = thirdMatch ? thirdMatch[1].padStart(4, "0") : "0000";
+
+  // Only include if we have at least the 1st prize and it's a real result (not placeholder)
+  if (first === "0000") return null;
+
+  return {
+    date: dateStr,
+    draw,
+    first,
+    second,
+    third,
+    firstTerm: toTerm(first),
+    secondTerm: toTerm(second),
+    thirdTerm: toTerm(third),
+    source: "NacionalLoteria"
+  };
 }
 
 async function fetchPanamaLoteria(url: string, draw: DrawName): Promise<DrawRow[]> {
