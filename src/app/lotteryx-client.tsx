@@ -1474,6 +1474,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
               </div>
               <div className="plan-card pro">
                 <h3>Plan Pro</h3>
+                <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.85rem", marginTop: "-8px", marginBottom: "16px", textAlign: "center" }}>Único pago, sin mensualidades</p>
                 <ul>
                   <li>⭐ Todos los Sorteos (Gordito, Extraordinaria)</li>
                   <li>⭐ Estrategias Premium (Histórico, Brinco, etc.)</li>
