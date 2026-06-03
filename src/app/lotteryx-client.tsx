@@ -217,41 +217,59 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
     const now = new Date();
     const panamaOffset = -5 * 60;
     const panamaTime = new Date(now.getTime() + (panamaOffset - now.getTimezoneOffset()) * 60000);
-    
+
     const day = panamaTime.getDay();
     const hour = panamaTime.getHours();
-    
+    const minute = panamaTime.getMinutes();
+    // Draw ends at 3:30 PM Panama time
+    const drawOver = hour > 15 || (hour === 15 && minute >= 30);
+    const drawStarted = hour >= 15;
+
     let nextDate = new Date(panamaTime);
     let drawName = "Miercolito";
-    let drawHour = 15;
+    let isPlayed = false;
+    let isToday = false;
 
     if (day === 0) {
-      if (hour >= 15) {
+      // Sunday = Dominical day
+      if (drawOver) {
+        // Already played today → next is Wednesday (Miercolito)
+        isPlayed = true;
         nextDate.setDate(nextDate.getDate() + 3);
+        drawName = "Miercolito";
       } else {
         drawName = "Dominical";
+        isToday = true;
       }
     } else if (day === 3) {
-      if (hour >= 15) {
+      // Wednesday = Miercolito day
+      if (drawOver) {
+        // Already played today → next is Sunday (Dominical)
+        isPlayed = true;
         nextDate.setDate(nextDate.getDate() + 4);
         drawName = "Dominical";
+      } else {
+        drawName = "Miercolito";
+        isToday = true;
       }
     } else if (day > 0 && day < 3) {
+      // Mon, Tue → next draw is Wednesday (Miercolito)
       nextDate.setDate(nextDate.getDate() + (3 - day));
-    } else if (day > 3) {
+      drawName = "Miercolito";
+    } else {
+      // Thu, Fri, Sat → next draw is Sunday (Dominical)
       nextDate.setDate(nextDate.getDate() + (7 - day));
       drawName = "Dominical";
     }
 
-    const isToday = nextDate.getDate() === panamaTime.getDate() && nextDate.getMonth() === panamaTime.getMonth();
-    
     let dateStr = nextDate.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-    
+
     return {
       name: drawName,
       date: dateStr,
       isToday,
+      isPlayed,
       timeStr: "3:00 PM"
     };
   }, []);
@@ -781,13 +799,29 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
             {/* NEXT DRAW BANNER */}
             <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px 24px", borderRadius: "16px", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(255,255,255,0.05)" }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600, color: "#f8fafc" }}>{nextDrawInfo.name}</h3>
-                <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", color: "#94a3b8" }}>{nextDrawInfo.date}</p>
+                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600, color: "#f8fafc" }}>
+                  {nextDrawInfo.name}
+                </h3>
+                <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", color: "#94a3b8" }}>
+                  {nextDrawInfo.isPlayed ? `Próximo: ${nextDrawInfo.date}` : nextDrawInfo.date}
+                </p>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(239, 68, 68, 0.1)", padding: "6px 12px", borderRadius: "20px", color: "#ef4444", fontSize: "0.85rem", fontWeight: 600, border: "1px solid rgba(239, 68, 68, 0.2)" }}>
-                <span style={{ display: "inline-block", width: "8px", height: "8px", backgroundColor: "#ef4444", borderRadius: "50%", animation: "pulse 2s infinite" }}></span>
-                {nextDrawInfo.isToday ? "Sorteo hoy" : "Próximo sorteo"} {nextDrawInfo.timeStr}
-              </div>
+              {nextDrawInfo.isPlayed ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(34,197,94,0.1)", padding: "6px 12px", borderRadius: "20px", color: "#4ade80", fontSize: "0.85rem", fontWeight: 600, border: "1px solid rgba(34,197,94,0.3)" }}>
+                  <span style={{ display: "inline-block", width: "8px", height: "8px", backgroundColor: "#4ade80", borderRadius: "50%" }}></span>
+                  Sorteo ya jugado ✔️
+                </div>
+              ) : nextDrawInfo.isToday ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(239, 68, 68, 0.1)", padding: "6px 12px", borderRadius: "20px", color: "#ef4444", fontSize: "0.85rem", fontWeight: 600, border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+                  <span style={{ display: "inline-block", width: "8px", height: "8px", backgroundColor: "#ef4444", borderRadius: "50%", animation: "pulse 2s infinite" }}></span>
+                  Sorteo hoy {nextDrawInfo.timeStr}
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(99,102,241,0.1)", padding: "6px 12px", borderRadius: "20px", color: "#a5b4fc", fontSize: "0.85rem", fontWeight: 600, border: "1px solid rgba(99,102,241,0.3)" }}>
+                  <span style={{ display: "inline-block", width: "8px", height: "8px", backgroundColor: "#a5b4fc", borderRadius: "50%" }}></span>
+                  Próximo sorteo {nextDrawInfo.timeStr}
+                </div>
+              )}
             </div>
 
             <div className="wizard-layout">
