@@ -63,10 +63,7 @@ export async function GET(request: Request) {
           if (drawName === "Miercolito" && config.miercolito === false) return { sent: false, reason: "Desactivado" };
           if ((drawName === "Gordito" || drawName === "Extraordinaria") && config.gordito === false) return { sent: false, reason: "Desactivado" };
 
-          const strategy = (user.favoriteStrategy || "jump") as StrategyType;
-          if (strategy === "last_year") {
-            return { sent: false, reason: "Estrategia last_year no envía correos" };
-          }
+          // All pro users get the generic reminder email regardless of strategy
           return sendMorningReminderEmail(user, drawName);
         })
       );

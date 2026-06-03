@@ -234,24 +234,14 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
 
     if (day === 0) {
       // Sunday = Dominical day
-      if (drawOver) {
-        isPlayed = true;
-        nextDate.setUTCDate(nextDate.getUTCDate() + 3); // next Wednesday
-        drawName = "Miercolito";
-      } else {
-        drawName = "Dominical";
-        isToday = true;
-      }
+      drawName = "Dominical";
+      isPlayed = drawOver;
+      isToday = !drawOver;
     } else if (day === 3) {
       // Wednesday = Miercolito day
-      if (drawOver) {
-        isPlayed = true;
-        nextDate.setUTCDate(nextDate.getUTCDate() + 4); // next Sunday
-        drawName = "Dominical";
-      } else {
-        drawName = "Miercolito";
-        isToday = true;
-      }
+      drawName = "Miercolito";
+      isPlayed = drawOver;
+      isToday = !drawOver;
     } else if (day > 0 && day < 3) {
       // Mon, Tue → next draw is Wednesday (Miercolito)
       nextDate.setUTCDate(nextDate.getUTCDate() + (3 - day));
@@ -805,7 +795,7 @@ export function LotteryXClient({ analysis }: { analysis: PatternAnalysis }) {
                   {nextDrawInfo.name}
                 </h3>
                 <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", color: "#94a3b8" }}>
-                  {nextDrawInfo.isPlayed ? `Próximo: ${nextDrawInfo.date}` : nextDrawInfo.date}
+                  {nextDrawInfo.date}
                 </p>
               </div>
               {nextDrawInfo.isPlayed ? (
